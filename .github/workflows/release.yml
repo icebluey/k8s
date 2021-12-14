@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Package Docker and K8s
+        run: |
+          sudo apt update -y -qqq
+          sudo apt install -y -qqq bash
+          sudo /bin/ln -sf bash /bin/sh
+          sudo bash scripts/.pre.sh
+          sudo rm -fr /tmp/.artifacts
+          sudo rm -fr /tmp/*
+          sudo mkdir /tmp/.artifacts
+          sudo bash dl-docker.sh
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo bash dl-containerd.sh
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo bash dl-docker-only.sh
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo bash dl-etcd.sh
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo bash dl-flanneld.sh
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo bash dl-k8s.sh "1.22.4"
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo bash dl-k8s.sh
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo sleep 2
+          sudo chmod 0644 /tmp/.artifacts/*.tar*
+          exit
+
+      - name: Update files
+        run: |
+          _dateutc=$(date -u +%Y-%m-%d)
+          _repo="$(echo ${{ github.repository }} | awk -F '/' '{print $2}')"
+          ls -1 /tmp/.artifacts/*.tar.xz 2>/dev/null | xargs -I "{}" sudo bash scripts/.upload_file_to_github-release.sh --token ${{ secrets.GITHUB_TOKEN }} --user "${{ github.repository_owner }}" --repo "${_repo}" --file "{}" --tag "v${_dateutc}"
+          ls -1 /tmp/.artifacts/*.tar.xz.sha256 2>/dev/null | xargs -I "{}" sudo bash scripts/.upload_file_to_github-release.sh --token ${{ secrets.GITHUB_TOKEN }} --user "${{ github.repository_owner }}" --repo "${_repo}" --file "{}" --tag "v${_dateutc}"
+          sudo sleep 2
+          cd /tmp
+          sudo rm -fr /tmp/.artifacts
+          sudo rm -fr /tmp/*
+          exit
+
