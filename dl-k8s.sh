@@ -125,11 +125,14 @@ tar -xf "release-v${_calico_ver}.tgz"
 sleep 2
 rm -f "release-v${_calico_ver}.tgz"
 mv -f "release-v${_calico_ver}" "calico-${_calico_ver}"
-sleep 2
+sleep 1
 chown -R root:root "calico-${_calico_ver}"
+chmod 0755 "calico-${_calico_ver}"/bin/calico*
+chmod 0644 "calico-${_calico_ver}"/images/*tar*
 rm -f "calico-${_calico_ver}"/bin/*darwin*
 rm -f "calico-${_calico_ver}"/bin/*windows*
 rm -f "calico-${_calico_ver}"/bin/*.exe
+sleep 1
 ls -1 "calico-${_calico_ver}"/images/*.tar | xargs -I '{}' gzip -f -9 '{}'
 find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
 
@@ -378,6 +381,20 @@ crictl -r unix:///run/containerd/containerd.sock images
 ' > usr/share/doc/kubernetes/load-all-images.sh
 sleep 1
 chmod 0755 usr/share/doc/kubernetes/load-all-images.sh
+
+echo '
+cd "$(dirname "$0")"
+cd calico-[1-9]*/
+ls -1 images/*.tar.gz 2>/dev/null | xargs -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
+echo
+sleep 1
+ctr --namespace "k8s.io" images ls -q | grep -iv "^sha256:"
+echo
+sleep 1
+crictl -r unix:///run/containerd/containerd.sock images
+' > usr/share/doc/kubernetes/load-calico-images.sh
+sleep 1
+chmod 0755 usr/share/doc/kubernetes/load-calico-images.sh
 
 echo '# Install the dependencies
 ## RHEL/CentOS
