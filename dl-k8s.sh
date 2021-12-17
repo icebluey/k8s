@@ -59,6 +59,7 @@ _flannel_cni_plugin_ver="$(wget -qO- 'https://github.com/flannel-io/cni-plugin/r
 _cri_tools_ver="$(wget -qO- 'https://github.com/kubernetes-sigs/cri-tools/releases' | grep -i 'crictl.*linux.*\.t' | grep -i 'href="/kubernetes-sigs/cri-tools/releases/download/' | sed 's|"|\n|g' | grep -i '^/kubernetes-sigs/cri-tools/releases/download/' | sed -e 's|.*/v||g' -e 's|/c.*||g' | sort -V | uniq | tail -n 1)"
 _istio_ver="$(wget -qO- 'https://github.com/istio/istio/releases' | grep -i 'istio.*linux.*\.t' | grep -i 'href="/istio/istio/releases/download/' | sed 's|"|\n|g' | grep -i '^/istio/istio/releases/download/' | sed 's|/istio/istio/releases/download/||g' | sed 's|/.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
 _metallb_ver="$(wget -qO- 'https://github.com/metallb/metallb/tags' | grep -i 'href="/metallb/metallb/releases/tag/' | sed 's|"|\n|g' | grep -i '^/metallb/metallb/releases/tag/' | sed 's|.*/v||g' | grep -iv 'chart' | sort -V | uniq | tail -n 1)"
+_calico_ver="$(wget -qO- 'https://github.com/projectcalico/calico/releases' | grep -i 'href="/projectcalico/calico/releases/download/.*/release-.*\.tgz' | sed 's|"|\n|g' | grep -i '^/projectcalico/' | grep -ivE 'alpha|beta|rc' | sed -e 's|.*/v||g' -e 's|/.*||g' | sort -V | tail -n 1)"
 
 _tmp_dir="$(mktemp -d)"
 cd "${_tmp_dir}"
@@ -77,6 +78,7 @@ wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_
 #wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istioctl-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
 #wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istioctl-${_istio_ver}-linux-${_arch}.tar.gz"
 wget -q -c -t 0 -T 9 "https://github.com/metallb/metallb/archive/refs/tags/v${_metallb_ver}.tar.gz" -O metallb-${_metallb_ver}.tar.gz
+wget -q -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${_calico_ver}/release-v${_calico_ver}.tgz"
 sleep 2
 
 sha256sum -c "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
@@ -119,6 +121,17 @@ tar -xf "metallb-${_metallb_ver}.tar.gz"
 sleep 2
 rm -f "metallb-${_metallb_ver}.tar.gz"
 
+tar -xf "release-v${_calico_ver}.tgz"
+sleep 2
+rm -f "release-v${_calico_ver}.tgz"
+mv -f "release-v${_calico_ver}" "calico-${_calico_ver}"
+sleep 2
+chown -R root:root "calico-${_calico_ver}"
+rm -f "calico-${_calico_ver}"/bin/*darwin*
+rm -f "calico-${_calico_ver}"/bin/*windows*
+rm -f "calico-${_calico_ver}"/bin/*.exe
+ls -1 "calico-${_calico_ver}"/images/*.tar | xargs -I '{}' gzip -f -9 '{}'
+find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
 
 _files=(
 'kubeadm'
@@ -164,6 +177,8 @@ install -v -c -m 0755 istioctl /tmp/kubernetes/usr/bin/
 cp -pfr "istio-${_istio_ver}" /tmp/kubernetes/usr/share/doc/kubernetes/
 
 cp -pfr "metallb-${_metallb_ver}" /tmp/kubernetes/usr/share/doc/kubernetes/
+
+cp -pfr "calico-${_calico_ver}" /tmp/kubernetes/usr/share/doc/kubernetes/
 
 cd /tmp/kubernetes
 sleep 1
