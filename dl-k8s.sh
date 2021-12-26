@@ -323,12 +323,12 @@ cd "$(dirname "$0")"
 rm -f /lib/systemd/system/kubelet.service
 sleep 1
 install -v -c -m 0644 kubelet.service /lib/systemd/system/
-echo "br_netfilter
+echo "nf_conntrack
+br_netfilter
 ip_vs
 ip_vs_rr
 ip_vs_wrr
-ip_vs_sh
-nf_conntrack" > /etc/modules-load.d/k8s.conf
+ip_vs_sh" > /etc/modules-load.d/k8s.conf
 sleep 1
 chmod 0644 /etc/modules-load.d/k8s.conf
 
