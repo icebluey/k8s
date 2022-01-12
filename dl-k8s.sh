@@ -20,7 +20,7 @@ _clean_start_docker () {
     rm -fr /var/lib/docker/*
     sleep 2
     systemctl start docker.service
-    sleep 10
+    sleep 2
 }
 
 _clean_docker () {
@@ -35,7 +35,7 @@ _clean_docker () {
     sleep 1
     ip link delete docker0 > /dev/null 2>&1 || : 
     rm -fr /var/lib/docker/*
-    sleep 2
+    sleep 1
 }
 
 set -e
@@ -79,20 +79,19 @@ wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_
 #wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istioctl-${_istio_ver}-linux-${_arch}.tar.gz"
 wget -q -c -t 0 -T 9 "https://github.com/metallb/metallb/archive/refs/tags/v${_metallb_ver}.tar.gz" -O metallb-${_metallb_ver}.tar.gz
 wget -q -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${_calico_ver}/release-v${_calico_ver}.tgz"
-sleep 2
 
 sha256sum -c "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 sleep 1
 rm -f "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 mkdir plugins.tmp
 tar -xf "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz" -C plugins.tmp/
-sleep 2
+sleep 1
 rm -f "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz"
 ls -la plugins.tmp/portmap
 
 rm -f plugins.tmp/flannel
 chmod 0755 flannel-amd64
-sleep 2
+sleep 1
 mv -f flannel-amd64 plugins.tmp/flannel
 
 sed 's|/||g' -i "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
@@ -101,28 +100,28 @@ sha256sum -c "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
 sleep 1
 rm -f "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
 tar -xf "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
-sleep 2
+sleep 1
 rm -f "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
 
 sha256sum -c "istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
 #sha256sum -c "istioctl-${_istio_ver}-linux-${_arch}.tar.gz"
-sleep 2
+sleep 1
 rm -f "istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
 #rm -f "istioctl-${_istio_ver}-linux-${_arch}.tar.gz"
 rm -fr istioctl
 tar -xf "istio-${_istio_ver}-linux-${_arch}.tar.gz"
-sleep 2
+sleep 1
 rm -f "istio-${_istio_ver}-linux-${_arch}.tar.gz"
 mv -f "istio-${_istio_ver}/bin/istioctl" ./
-sleep 2
+sleep 1
 rm -fr "istio-${_istio_ver}/bin"
 
 tar -xf "metallb-${_metallb_ver}.tar.gz"
-sleep 2
+sleep 1
 rm -f "metallb-${_metallb_ver}.tar.gz"
 
 tar -xf "release-v${_calico_ver}.tgz"
-sleep 2
+sleep 1
 rm -f "release-v${_calico_ver}.tgz"
 mv -f "release-v${_calico_ver}" "calico-${_calico_ver}"
 sleep 1
@@ -160,8 +159,8 @@ install -m 0755 -d /tmp/kubernetes/usr/bin
 install -m 0755 -d /tmp/kubernetes/etc/systemd/system/kubelet.service.d
 install -m 0755 -d /tmp/kubernetes/etc/kubernetes/manifests
 install -m 0755 -d /tmp/kubernetes/etc/kubernetes/pki/etcd
-install -m 0755 -d /tmp/kubernetes/usr/share/doc/kubernetes/cni-plugins
-install -m 0755 -d /tmp/kubernetes/usr/share/doc/kubernetes/images
+install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/cni-plugins
+install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/images
 install -m 0755 -d /tmp/kubernetes/etc/sysconfig
 
 for file in ${_files[@]}; do
@@ -169,35 +168,35 @@ for file in ${_files[@]}; do
 done
 install -v -c -m 0755 crictl /tmp/kubernetes/usr/bin/
 install -v -c -m 0644 10-kubeadm.conf /tmp/kubernetes/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-install -v -c -m 0644 kubelet.service /tmp/kubernetes/usr/share/doc/kubernetes/
-install -v -c -m 0755 plugins.tmp/* /tmp/kubernetes/usr/share/doc/kubernetes/cni-plugins/
+install -v -c -m 0644 kubelet.service /tmp/kubernetes/usr/share/kubernetes/
+install -v -c -m 0755 plugins.tmp/* /tmp/kubernetes/usr/share/kubernetes/cni-plugins/
 
-install -v -c -m 0644 kube-flannel.yaml /tmp/kubernetes/usr/share/doc/kubernetes/
-install -v -c -m 0644 kube-dashboard.yaml /tmp/kubernetes/usr/share/doc/kubernetes/
-install -v -c -m 0644 ingress-nginx.yaml /tmp/kubernetes/usr/share/doc/kubernetes/
+install -v -c -m 0644 kube-flannel.yaml /tmp/kubernetes/usr/share/kubernetes/
+install -v -c -m 0644 kube-dashboard.yaml /tmp/kubernetes/usr/share/kubernetes/
+install -v -c -m 0644 ingress-nginx.yaml /tmp/kubernetes/usr/share/kubernetes/
 
 install -v -c -m 0755 istioctl /tmp/kubernetes/usr/bin/
-cp -pfr "istio-${_istio_ver}" /tmp/kubernetes/usr/share/doc/kubernetes/
+cp -pfr "istio-${_istio_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
-cp -pfr "metallb-${_metallb_ver}" /tmp/kubernetes/usr/share/doc/kubernetes/
+cp -pfr "metallb-${_metallb_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
-cp -pfr "calico-${_calico_ver}" /tmp/kubernetes/usr/share/doc/kubernetes/
+cp -pfr "calico-${_calico_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
 cd /tmp/kubernetes
 sleep 1
 echo '
 kubectl create secret generic memberlist -n metallb-system --from-literal=secretkey="$(openssl rand -base64 256)"
-' > usr/share/doc/kubernetes/metallb-${_metallb_ver}/manifests/create-secret.sh
+' > usr/share/kubernetes/metallb-${_metallb_ver}/manifests/create-secret.sh
 sleep 1
-chmod 0755 usr/share/doc/kubernetes/metallb-${_metallb_ver}/manifests/create-secret.sh
+chmod 0755 usr/share/kubernetes/metallb-${_metallb_ver}/manifests/create-secret.sh
 
-sed '/^After=/s|[ \t]*docker.service||g' -i usr/share/doc/kubernetes/kubelet.service
-sed '/^After=/s|docker.service||g' -i usr/share/doc/kubernetes/kubelet.service
-sed -e '/^After=$/d' -i usr/share/doc/kubernetes/kubelet.service
-sed '/^After=/aAfter=containerd.service docker.service' -i usr/share/doc/kubernetes/kubelet.service
+sed '/^After=/s|[ \t]*docker.service||g' -i usr/share/kubernetes/kubelet.service
+sed '/^After=/s|docker.service||g' -i usr/share/kubernetes/kubelet.service
+sed -e '/^After=$/d' -i usr/share/kubernetes/kubelet.service
+sed '/^After=/aAfter=containerd.service docker.service' -i usr/share/kubernetes/kubelet.service
 
 find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
-find usr/share/doc/kubernetes/cni-plugins/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
+find usr/share/kubernetes/cni-plugins/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
 sleep 2
 
 if [[ "$(./usr/bin/kubeadm config images list 2>&1 | grep -i '^k8s\.gcr' | wc -l)" != "$(./usr/bin/kubeadm config images list 2>/dev/null | wc -l)" ]]; then
@@ -206,23 +205,23 @@ if [[ "$(./usr/bin/kubeadm config images list 2>&1 | grep -i '^k8s\.gcr' | wc -l
 fi
 
 _images=''
-_images=($(./usr/bin/kubeadm config images list 2>/dev/null) $(cat usr/share/doc/kubernetes/kube-flannel.yaml usr/share/doc/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+_images=($(./usr/bin/kubeadm config images list 2>/dev/null) $(cat usr/share/kubernetes/kube-flannel.yaml usr/share/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
 _clean_start_docker
 for image in ${_images[@]}; do
     docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
-    sleep 5
+    sleep 2
 done
 echo
-sleep 10
+sleep 2
 docker images -a
 echo
-sleep 10
-docker image save -o usr/share/doc/kubernetes/images/k8s.tar ${_images[@]}
 sleep 2
-chmod 0644 usr/share/doc/kubernetes/images/k8s.tar
-sleep 10
-gzip -f -9 usr/share/doc/kubernetes/images/k8s.tar
+docker image save -o usr/share/kubernetes/images/k8s.tar ${_images[@]}
+sleep 2
+chmod 0644 usr/share/kubernetes/images/k8s.tar
+sleep 2
+gzip -f -9 usr/share/kubernetes/images/k8s.tar
 ###############################################################################
 
 _images=''
@@ -230,16 +229,16 @@ _images=''
 _clean_start_docker
 _traefik_ver="$(wget -qO- 'https://github.com/traefik/traefik/releases' | grep -i 'href="/traefik/traefik/releases/download/' | sed 's|"|\n|g' | grep -i '^/traefik/traefik/releases/download/' | sed -e 's|.*/v||g' -e 's|/traefik.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
 docker pull "traefik:v${_traefik_ver}"
-sleep 10
-docker image save -o usr/share/doc/kubernetes/images/"traefik-${_traefik_ver}".tar "traefik:v${_traefik_ver}"
 sleep 2
-chmod 0644 usr/share/doc/kubernetes/images/"traefik-${_traefik_ver}".tar
-sleep 10
-gzip -f -9 usr/share/doc/kubernetes/images/"traefik-${_traefik_ver}".tar
+docker image save -o usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar "traefik:v${_traefik_ver}"
+sleep 2
+chmod 0644 usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar
+sleep 2
+gzip -f -9 usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar
 ###############################################################################
 
 _images=''
-_images=($(cat usr/share/doc/kubernetes/ingress-nginx.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+_images=($(cat usr/share/kubernetes/ingress-nginx.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
 _clean_start_docker
 for image in ${_images[@]}; do
@@ -247,16 +246,16 @@ for image in ${_images[@]}; do
     sleep 2
 done
 echo
-sleep 10
-docker image save -o usr/share/doc/kubernetes/images/ingress-nginx.tar ${_images[@]}
 sleep 2
-chmod 0644 usr/share/doc/kubernetes/images/ingress-nginx.tar
-sleep 10
-gzip -f -9 usr/share/doc/kubernetes/images/ingress-nginx.tar
+docker image save -o usr/share/kubernetes/images/ingress-nginx.tar ${_images[@]}
+sleep 2
+chmod 0644 usr/share/kubernetes/images/ingress-nginx.tar
+sleep 2
+gzip -f -9 usr/share/kubernetes/images/ingress-nginx.tar
 ###############################################################################
 
 _images=''
-_images=($(cat usr/share/doc/kubernetes/"metallb-${_metallb_ver}"/manifests/metallb.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/manifests/metallb.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
 _clean_start_docker
 for image in ${_images[@]}; do
@@ -264,12 +263,12 @@ for image in ${_images[@]}; do
     sleep 2
 done
 echo
-sleep 10
-docker image save -o usr/share/doc/kubernetes/images/"metallb-${_metallb_ver}".tar ${_images[@]}
 sleep 2
-chmod 0644 usr/share/doc/kubernetes/images/"metallb-${_metallb_ver}".tar
-sleep 10
-gzip -f -9 usr/share/doc/kubernetes/images/"metallb-${_metallb_ver}".tar
+docker image save -o usr/share/kubernetes/images/"metallb-${_metallb_ver}".tar ${_images[@]}
+sleep 2
+chmod 0644 usr/share/kubernetes/images/"metallb-${_metallb_ver}".tar
+sleep 2
+gzip -f -9 usr/share/kubernetes/images/"metallb-${_metallb_ver}".tar
 ###############################################################################
 
 _images=''
@@ -279,17 +278,16 @@ docker pull istio/pilot:${_istio_ver}
 sleep 2
 docker pull istio/proxyv2:${_istio_ver}
 echo
-sleep 10
-docker image save -o usr/share/doc/kubernetes/images/"istio-${_istio_ver}".tar istio/pilot:${_istio_ver} istio/proxyv2:${_istio_ver}
 sleep 2
-chmod 0644 usr/share/doc/kubernetes/images/"istio-${_istio_ver}".tar
-sleep 10
-gzip -f -9 usr/share/doc/kubernetes/images/"istio-${_istio_ver}".tar
+docker image save -o usr/share/kubernetes/images/"istio-${_istio_ver}".tar istio/pilot:${_istio_ver} istio/proxyv2:${_istio_ver}
+sleep 2
+chmod 0644 usr/share/kubernetes/images/"istio-${_istio_ver}".tar
+sleep 2
+gzip -f -9 usr/share/kubernetes/images/"istio-${_istio_ver}".tar
 ###############################################################################
 
-sleep 10
+sleep 2
 _clean_docker
-
 
 echo 'runtime-endpoint: "unix:///run/containerd/containerd.sock"' > etc/crictl.yaml
 sleep 1
@@ -300,22 +298,22 @@ sleep 2
 chmod 0644 etc/sysconfig/kubelet
 chmod 0644 etc/kubernetes/coredns-resolv.conf
 
-./usr/bin/kubeadm config print init-defaults | sed "s|kubernetesVersion: .*|kubernetesVersion: ${_k8s_ver}|g" > usr/share/doc/kubernetes/example-kubeadm-config.yaml
-_flannel_network=$(grep -i '"Network":' usr/share/doc/kubernetes/kube-flannel.yaml | awk -F : '{print $2}' | sed 's|[[:blank:]]*||g' | sed 's|[",]||g')
-sed 's| criSocket: .*| criSocket: /run/containerd/containerd.sock|g' -i usr/share/doc/kubernetes/example-kubeadm-config.yaml
-sed "/ serviceSubnet: /i \  podSubnet: ${_flannel_network}" -i usr/share/doc/kubernetes/example-kubeadm-config.yaml
-sed '/ timeoutForControlPlane: /i \  extraArgs: \n\    service-node-port-range: 30000-39999' -i usr/share/doc/kubernetes/example-kubeadm-config.yaml
-sed '/^controllerManager:/icontrolPlaneEndpoint: "lb_ip:port"' -i usr/share/doc/kubernetes/example-kubeadm-config.yaml
-sed 's| advertiseAddress: .*| advertiseAddress: node_ip|g' -i usr/share/doc/kubernetes/example-kubeadm-config.yaml
-sed 's|  name: node|  name: node_name|g' -i usr/share/doc/kubernetes/example-kubeadm-config.yaml
+./usr/bin/kubeadm config print init-defaults | sed "s|kubernetesVersion: .*|kubernetesVersion: ${_k8s_ver}|g" > usr/share/kubernetes/example-kubeadm-config.yaml
+_flannel_network=$(grep -i '"Network":' usr/share/kubernetes/kube-flannel.yaml | awk -F : '{print $2}' | sed 's|[[:blank:]]*||g' | sed 's|[",]||g')
+sed 's| criSocket: .*| criSocket: /run/containerd/containerd.sock|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed "/ serviceSubnet: /i \  podSubnet: ${_flannel_network}" -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed '/ timeoutForControlPlane: /i \  extraArgs: \n\    service-node-port-range: 30000-39999' -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed '/^controllerManager:/icontrolPlaneEndpoint: "lb_ip:port"' -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed 's| advertiseAddress: .*| advertiseAddress: node_ip|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed 's|  name: node|  name: node_name|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
 echo '---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
 mode: "ipvs"
 ipvs:
-  strictARP: true' >> usr/share/doc/kubernetes/example-kubeadm-config.yaml
+  strictARP: true' >> usr/share/kubernetes/example-kubeadm-config.yaml
 sleep 1
-chmod 0644 usr/share/doc/kubernetes/example-kubeadm-config.yaml
+chmod 0644 usr/share/kubernetes/example-kubeadm-config.yaml
 
 echo '
 cd "$(dirname "$0")"
@@ -355,11 +353,11 @@ chmod 0644 /etc/sysctl.d/999-k8s.conf
 sleep 1
 /sbin/sysctl --system >/dev/null 2>&1 || : 
 /bin/systemctl daemon-reload >/dev/null 2>&1 || : 
-' > usr/share/doc/kubernetes/.install.txt
+' > usr/share/kubernetes/.install.txt
 
 echo 'install -m 0755 -d /opt/cni/bin
 install -m 0755 cni-plugins/* /opt/cni/bin/
-' >> usr/share/doc/kubernetes/.install.txt
+' >> usr/share/kubernetes/.install.txt
 
 echo '
 cd "$(dirname "$0")"
@@ -378,9 +376,9 @@ ctr --namespace "k8s.io" images ls -q | grep -iv "^sha256:"
 echo
 sleep 1
 crictl -r unix:///run/containerd/containerd.sock images
-' > usr/share/doc/kubernetes/load-all-images.sh
+' > usr/share/kubernetes/load-all-images.sh
 sleep 1
-chmod 0755 usr/share/doc/kubernetes/load-all-images.sh
+chmod 0755 usr/share/kubernetes/load-all-images.sh
 
 echo '
 cd "$(dirname "$0")"
@@ -392,16 +390,16 @@ ctr --namespace "k8s.io" images ls -q | grep -iv "^sha256:"
 echo
 sleep 1
 crictl -r unix:///run/containerd/containerd.sock images
-' > usr/share/doc/kubernetes/load-calico-images.sh
+' > usr/share/kubernetes/load-calico-images.sh
 sleep 1
-chmod 0755 usr/share/doc/kubernetes/load-calico-images.sh
+chmod 0755 usr/share/kubernetes/load-calico-images.sh
 
 echo '# Install the dependencies
-## RHEL/CentOS
+## RHEL 7 / CentOS 7
 ```
 yum install -y binutils coreutils util-linux socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
 ```
-## Debian/Ubuntu
+## Debian / Ubuntu 20.04
 ```
 apt install -y binutils coreutils util-linux socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack iproute2 nfs-common 
 ```
@@ -439,8 +437,10 @@ kubectl get configmap kube-proxy -n kube-system -o yaml | \
 sed -e '\''s/strictARP: false/strictARP: true/'\'' | \
 kubectl apply -f - -n kube-system
 
-' > usr/share/doc/kubernetes/README.md
+' > usr/share/kubernetes/README.md
 
+sleep 2
+chown -R root:root /tmp/kubernetes
 echo
 sleep 2
 tar --format=gnu -cf - * | xz --threads=2 -v -f -z -9 > /tmp/"k8s-${_k8s_ver}-1_amd64.tar.xz"
