@@ -120,20 +120,27 @@ tar -xf "metallb-${_metallb_ver}.tar.gz"
 sleep 1
 rm -f "metallb-${_metallb_ver}.tar.gz"
 
-tar -xf "release-v${_calico_ver}.tgz"
+mkdir /tmp/.calico.extr.tmp
+tar -xf "release-v${_calico_ver}.tgz" -C /tmp/.calico.extr.tmp/
 sleep 1
 rm -f "release-v${_calico_ver}.tgz"
-mv -f "release-v${_calico_ver}" "calico-${_calico_ver}"
+_calico_release_dir="$(find /tmp/.calico.extr.tmp/ -type f -iname 'calicoctl' -o -iname 'calicoctl-linux-amd64' | grep '/bin/calicoctl' | sed 's|/bin/.*||g' | sort | uniq | tail -n 1)"
+mv -v -f "${_calico_release_dir}" "calico-${_calico_ver}"
 sleep 1
 chown -R root:root "calico-${_calico_ver}"
-chmod 0755 "calico-${_calico_ver}"/bin/calico*
+find "calico-${_calico_ver}"/ -type d | xargs --no-run-if-empty -I '{}' chmod 0755 '{}'
+find "calico-${_calico_ver}"/bin/ -type f -iname 'calicoctl' -o -iname 'calicoctl-linux-*' -o -iname 'calico-bpf' | grep -v '/bin/cni/' | xargs --no-run-if-empty -I '{}' chmod 0755 '{}'
 chmod 0644 "calico-${_calico_ver}"/images/*tar*
 rm -f "calico-${_calico_ver}"/bin/*darwin*
 rm -f "calico-${_calico_ver}"/bin/*windows*
 rm -f "calico-${_calico_ver}"/bin/*.exe
+rm -f "calico-${_calico_ver}"/bin/calicoctl/calicoctl-linux-{arm64,armv7,ppc64,s390x}*
+rm -fr "calico-${_calico_ver}"/bin/cni/{arm64,armv7,ppc64,s390x,windows}*
+rm -fr /tmp/.calico.extr.tmp
+_calico_release_dir=''
 sleep 1
 ls -1 "calico-${_calico_ver}"/images/*.tar | xargs -I '{}' gzip -f -9 '{}'
-find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
+find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | grep -iv '/calico-bpf' | xargs --no-run-if-empty -I '{}' strip '{}'
 
 _files=(
 'kubeadm'
@@ -443,7 +450,7 @@ sleep 2
 chown -R root:root /tmp/kubernetes
 echo
 sleep 2
-tar --format=gnu -cf - * | xz --threads=2 -v -f -z -9 > /tmp/"k8s-${_k8s_ver}-1_amd64.tar.xz"
+tar --format=gnu -cvf - * | xz --threads=2 -f -z -9 > /tmp/"k8s-${_k8s_ver}-1_amd64.tar.xz"
 echo
 sleep 2
 cd /tmp
