@@ -220,7 +220,7 @@ if [[ "$(./usr/bin/kubeadm config images list 2>&1 | grep -i '^k8s\.gcr' | wc -l
 fi
 
 _images=''
-_images=($(./usr/bin/kubeadm config images list 2>/dev/null) $(cat usr/share/kubernetes/kube-flannel.yaml usr/share/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+_images=($(./usr/bin/kubeadm config images list 2>/dev/null) $(cat usr/share/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
 _clean_start_docker
 for image in ${_images[@]}; do
@@ -237,6 +237,26 @@ sleep 2
 chmod 0644 usr/share/kubernetes/images/k8s.tar
 sleep 2
 gzip -f -9 usr/share/kubernetes/images/k8s.tar
+###############################################################################
+
+_images=''
+_images=($(cat usr/share/kubernetes/kube-flannel.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+###############################################################################
+_clean_start_docker
+for image in ${_images[@]}; do
+    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+    sleep 2
+done
+echo
+sleep 2
+docker images -a
+echo
+sleep 2
+docker image save -o usr/share/kubernetes/images/flannel.tar ${_images[@]}
+sleep 2
+chmod 0644 usr/share/kubernetes/images/flannel.tar
+sleep 2
+gzip -f -9 usr/share/kubernetes/images/flannel.tar
 ###############################################################################
 
 _images=''
