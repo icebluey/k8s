@@ -187,6 +187,14 @@ cp -pfr "istio-${_istio_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
 cp -pfr "metallb-${_metallb_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
+if [[ -f "calico-${_calico_ver}"/bin/calicoctl/calicoctl ]]; then
+    install -v -c -m 0755 "calico-${_calico_ver}"/bin/calicoctl/calicoctl /tmp/kubernetes/usr/bin/
+elif [[ -f "calico-${_calico_ver}"/bin/calicoctl ]]; then
+    install -v -c -m 0755 "calico-${_calico_ver}"/bin/calicoctl /tmp/kubernetes/usr/bin/
+fi
+if [[ -f "calico-${_calico_ver}"/bin/calico-bpf ]]; then
+    install -v -c -m 0755 "calico-${_calico_ver}"/bin/calico-bpf /tmp/kubernetes/usr/bin/
+fi
 cp -pfr "calico-${_calico_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
 cd /tmp/kubernetes
