@@ -80,8 +80,7 @@ wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_
 wget -q -c -t 0 -T 9 "https://github.com/metallb/metallb/archive/refs/tags/v${_metallb_ver}.tar.gz" -O metallb-${_metallb_ver}.tar.gz
 wget -q -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${_calico_ver}/release-v${_calico_ver}.tgz"
 
-#sha256sum -c "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
-echo "$(awk '{print $1}' "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256")  crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz" | sha256sum -c -
+sha256sum -c "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 sleep 1
 rm -f "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 mkdir plugins.tmp
@@ -95,9 +94,8 @@ chmod 0755 flannel-amd64
 sleep 1
 mv -f flannel-amd64 plugins.tmp/flannel
 
-sed 's|/||g' -i "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
-sleep 1
-sha256sum -c "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
+#sha256sum -c "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
+echo "$(awk '{print $1}' "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256")  crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz" | sha256sum -c -
 sleep 1
 rm -f "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
 tar -xf "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
