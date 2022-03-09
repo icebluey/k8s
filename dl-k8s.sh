@@ -81,9 +81,7 @@ wget -q -c -t 0 -T 9 "https://github.com/metallb/metallb/archive/refs/tags/v${_m
 wget -q -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${_calico_ver}/release-v${_calico_ver}.tgz"
 
 #sha256sum -c "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
-ls -la ./
-echo "$(awk '{print $1}' "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256")  crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
-echo "$(awk '{print $1}' "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256")  crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz" | sha256sum -c -
+echo "$(awk '{print $1}' "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256")  crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz" | sha256sum -c -
 sleep 1
 rm -f "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 mkdir plugins.tmp
