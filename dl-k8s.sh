@@ -2,6 +2,8 @@
 export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 TZ='UTC'; export TZ
 
+umask 022
+
 #https://dl.k8s.io/release/v1.22.3/bin/linux/amd64/kubeadm
 #https://dl.k8s.io/release/v1.22.3/bin/linux/amd64/kubelet
 #https://dl.k8s.io/release/v1.22.3/bin/linux/amd64/kubectl
