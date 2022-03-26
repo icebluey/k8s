@@ -135,8 +135,8 @@ chmod 0644 "calico-${_calico_ver}"/images/*tar*
 rm -f "calico-${_calico_ver}"/bin/*darwin*
 rm -f "calico-${_calico_ver}"/bin/*windows*
 rm -f "calico-${_calico_ver}"/bin/*.exe
-rm -f "calico-${_calico_ver}"/bin/calicoctl/calicoctl-linux-{arm64,armv7,ppc64,s390x}*
-rm -fr "calico-${_calico_ver}"/bin/cni/{arm64,armv7,ppc64,s390x,windows}*
+rm -f "calico-${_calico_ver}"/bin/calicoctl/calicoctl-linux-{arm64,armv7,ppc64,s390x,darwin,windows}*
+rm -fr "calico-${_calico_ver}"/bin/cni/{arm64,armv7,ppc64,s390x,darwin,windows}*
 rm -fr /tmp/.calico.extr.tmp
 _calico_release_dir=''
 sleep 1
@@ -188,10 +188,10 @@ cp -pfr "istio-${_istio_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
 cp -pfr "metallb-${_metallb_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
-if [[ -f "calico-${_calico_ver}"/bin/calicoctl/calicoctl ]]; then
-    install -v -c -m 0755 "calico-${_calico_ver}"/bin/calicoctl/calicoctl /tmp/kubernetes/usr/bin/
+if [[ -f "calico-${_calico_ver}"/bin/calicoctl/calicoctl-linux-amd64 ]]; then
+    install -v -c -m 0755 "calico-${_calico_ver}"/bin/calicoctl/calicoctl-linux-amd64 /tmp/kubernetes/usr/bin/calicoctl
 elif [[ -f "calico-${_calico_ver}"/bin/calicoctl ]]; then
-    install -v -c -m 0755 "calico-${_calico_ver}"/bin/calicoctl /tmp/kubernetes/usr/bin/
+    install -v -c -m 0755 "calico-${_calico_ver}"/bin/calicoctl /tmp/kubernetes/usr/bin/calicoctl
 fi
 if [[ -f "calico-${_calico_ver}"/bin/calico-bpf ]]; then
     install -v -c -m 0755 "calico-${_calico_ver}"/bin/calico-bpf /tmp/kubernetes/usr/bin/
