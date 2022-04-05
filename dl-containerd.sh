@@ -103,7 +103,7 @@ cd /tmp/containerd
 sleep 2
 file usr/bin/* | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
 
-./usr/bin/containerd config default | sed 's|SystemdCgroup =.*|SystemdCgroup = true|g' > etc/containerd/config.toml
+./usr/bin/containerd config default | sed 's|SystemdCgroup =.*|SystemdCgroup = true|g' | sed '/disable_apparmor/s|false|true|g' > etc/containerd/config.toml
 sleep 1
 chmod 0644 etc/containerd/config.toml
 
