@@ -35,7 +35,7 @@ jobs:
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           sudo bash dl-flanneld.sh
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-          sudo bash dl-k8s.sh "1.22.4"
+          sudo bash dl-k8s.sh "1.23.6"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           sudo bash dl-k8s.sh
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
