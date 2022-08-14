@@ -292,7 +292,7 @@ gzip -f -9 usr/share/kubernetes/images/ingress-nginx.tar
 
 _images=''
 #_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/manifests/metallb.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
-_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-native.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-frr.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
 _clean_start_docker
 for image in ${_images[@]}; do
