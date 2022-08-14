@@ -200,11 +200,11 @@ cp -pfr "calico-${_calico_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
 cd /tmp/kubernetes
 sleep 1
-echo '
-kubectl create secret generic memberlist -n metallb-system --from-literal=secretkey="$(openssl rand -base64 256)"
-' > usr/share/kubernetes/metallb-${_metallb_ver}/manifests/create-secret.sh
-sleep 1
-chmod 0755 usr/share/kubernetes/metallb-${_metallb_ver}/manifests/create-secret.sh
+#echo '
+#kubectl create secret generic memberlist -n metallb-system --from-literal=secretkey="$(openssl rand -base64 256)"
+#' > usr/share/kubernetes/metallb-${_metallb_ver}/manifests/create-secret.sh
+#sleep 1
+#chmod 0755 usr/share/kubernetes/metallb-${_metallb_ver}/manifests/create-secret.sh
 
 sed '/^After=/s|[ \t]*docker.service||g' -i usr/share/kubernetes/kubelet.service
 sed '/^After=/s|docker.service||g' -i usr/share/kubernetes/kubelet.service
@@ -291,7 +291,8 @@ gzip -f -9 usr/share/kubernetes/images/ingress-nginx.tar
 ###############################################################################
 
 _images=''
-_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/manifests/metallb.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+#_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/manifests/metallb.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-native.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
 _clean_start_docker
 for image in ${_images[@]}; do
@@ -472,6 +473,9 @@ kubectl apply -f - -n kube-system
 kubectl get configmap kube-proxy -n kube-system -o yaml | \
 sed -e '\''s/strictARP: false/strictARP: true/'\'' | \
 kubectl apply -f - -n kube-system
+
+#MetalLB
+kubectl create secret generic memberlist -n metallb-system --from-literal=secretkey="$(openssl rand -base64 256)"
 
 ' > usr/share/kubernetes/README.md
 
