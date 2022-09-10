@@ -215,7 +215,7 @@ find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not 
 find usr/share/kubernetes/cni-plugins/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
 sleep 2
 
-if [[ "$(./usr/bin/kubeadm config images list 2>&1 | grep -i '^k8s\.gcr' | wc -l)" != "$(./usr/bin/kubeadm config images list 2>/dev/null | wc -l)" ]]; then
+if [[ "$(./usr/bin/kubeadm config images list 2>&1 | grep -iE 'k8s\.gcr|k8s\.io' | wc -l)" != "$(./usr/bin/kubeadm config images list 2>/dev/null | wc -l)" ]]; then
     echo -e '# See more info, run:\n./kubeadm config images list'
     echo
     ./usr/bin/kubeadm config images list 2>&1
