@@ -216,8 +216,11 @@ find usr/share/kubernetes/cni-plugins/ -type f -exec file '{}' \; | sed -n -e 's
 sleep 2
 
 if [[ "$(./usr/bin/kubeadm config images list 2>&1 | grep -i '^k8s\.gcr' | wc -l)" != "$(./usr/bin/kubeadm config images list 2>/dev/null | wc -l)" ]]; then
+    echo
+    ./usr/bin/kubeadm config images list 2>&1
+    echo
     echo -e '#See more info, run:\n./kubeadm config images list'
-    exit 1
+    #exit 1
 fi
 
 _images=''
