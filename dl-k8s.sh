@@ -4,9 +4,9 @@ TZ='UTC'; export TZ
 
 umask 022
 
-#https://dl.k8s.io/release/v1.22.3/bin/linux/amd64/kubeadm
-#https://dl.k8s.io/release/v1.22.3/bin/linux/amd64/kubelet
-#https://dl.k8s.io/release/v1.22.3/bin/linux/amd64/kubectl
+#https://dl.k8s.io/release/v1.24.4/bin/linux/amd64/kubeadm
+#https://dl.k8s.io/release/v1.24.4/bin/linux/amd64/kubelet
+#https://dl.k8s.io/release/v1.24.4/bin/linux/amd64/kubectl
 
 _clean_start_docker () {
     systemctl daemon-reload > /dev/null 2>&1 || : 
@@ -406,7 +406,7 @@ systemctl daemon-reload > /dev/null 2>&1 || :
 sleep 1
 systemctl start containerd.service > /dev/null 2>&1 || : 
 sleep 10
-ctr namespaces create "k8s.io"
+if ! ctr namespaces list | sed "1d" | grep -q -i "k8s\.io"; then ctr namespaces create "k8s.io"; fi
 sleep 1
 ls -1 *.tar.gz 2>/dev/null | xargs -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
 ls -1 *.tar 2>/dev/null | xargs -I "{}" ctr --namespace "k8s.io" images import "{}"
