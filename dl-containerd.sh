@@ -112,6 +112,7 @@ file usr/bin/* | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -
 ./usr/bin/containerd config default | sed 's|SystemdCgroup =.*|SystemdCgroup = true|g' | sed '/disable_apparmor/s|false|true|g' > etc/containerd/config.toml
 sleep 1
 chmod 0644 etc/containerd/config.toml
+sleep 1 ; mv -f etc/containerd/config.toml etc/containerd/config.toml.example
 
 echo '# Copyright The containerd Authors.
 #
