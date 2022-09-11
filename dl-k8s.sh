@@ -175,7 +175,7 @@ for file in ${_files[@]}; do
     install -v -c -m 0755 ${file} /tmp/kubernetes/usr/bin/
 done
 install -v -c -m 0755 crictl /tmp/kubernetes/usr/bin/
-install -v -c -m 0644 10-kubeadm.conf /tmp/kubernetes/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+install -v -c -m 0644 10-kubeadm.conf /tmp/kubernetes/etc/systemd/system/kubelet.service.d/10-kubeadm.conf.example
 install -v -c -m 0644 kubelet.service /tmp/kubernetes/usr/share/kubernetes/
 install -v -c -m 0755 plugins.tmp/* /tmp/kubernetes/usr/share/kubernetes/cni-plugins/
 
@@ -333,10 +333,11 @@ echo 'runtime-endpoint: "unix:///run/containerd/containerd.sock"' > etc/crictl.y
 sleep 1
 chmod 0644 etc/crictl.yaml
 echo 'KUBELET_EXTRA_ARGS="--resolv-conf=/etc/kubernetes/coredns-resolv.conf"' > etc/sysconfig/kubelet
-echo 'nameserver 8.8.8.8' > etc/kubernetes/coredns-resolv.conf
-sleep 2
+sleep 1
 chmod 0644 etc/sysconfig/kubelet
-chmod 0644 etc/kubernetes/coredns-resolv.conf
+echo 'nameserver 8.8.8.8' > etc/kubernetes/coredns-resolv.conf.example
+sleep 1
+chmod 0644 etc/kubernetes/coredns-resolv.conf.example
 
 ./usr/bin/kubeadm config print init-defaults | sed "s|kubernetesVersion: .*|kubernetesVersion: ${_k8s_ver}|g" > usr/share/kubernetes/example-kubeadm-config.yaml
 _flannel_network=$(grep -i '"Network":' usr/share/kubernetes/kube-flannel.yaml | awk -F : '{print $2}' | sed 's|[[:blank:]]*||g' | sed 's|[",]||g')
@@ -454,6 +455,7 @@ kubeadm init --cri-socket /run/containerd/containerd.sock --pod-network-cidr=10.
 #or create /etc/crictl.yaml
 echo '\''runtime-endpoint: "unix:///run/containerd/containerd.sock"'\'' > /etc/crictl.yaml
 
+# /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 # --image-gc-high-threshold=98 --image-gc-low-threshold=96 --minimum-image-ttl-duration=2400h --eviction-hard=nodefs.available<5% --eviction-hard=imagefs.available<5%
 kubectl taint nodes --all node-role.kubernetes.io/master:NoSchedule-
 
@@ -478,6 +480,7 @@ sed -e '\''s/strictARP: false/strictARP: true/'\'' | \
 kubectl apply -f - -n kube-system
 
 #MetalLB
+# Create namespace metallb-system first
 kubectl create secret generic memberlist -n metallb-system --from-literal=secretkey="$(openssl rand -base64 256)"
 
 ' > usr/share/kubernetes/README.md
