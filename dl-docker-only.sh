@@ -223,7 +223,7 @@ tar --format=gnu -cf - * | xz --threads=2 -v -f -z -9 > /tmp/"docker-only-${_ver
 echo
 sleep 2
 cd /tmp
-sha256sum "docker-only-${_version}-1_amd64.tar.xz" > "docker-only-${_version}-1_amd64.tar.xz".sha256
+openssl dgst -r -sha256 "docker-only-${_version}-1_amd64.tar.xz" > "docker-only-${_version}-1_amd64.tar.xz".sha256
 sleep 2
 
 cd /tmp

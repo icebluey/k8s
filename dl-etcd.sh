@@ -139,7 +139,7 @@ tar --format=gnu -cf - * | xz --threads=2 -v -f -z -9 > /tmp/"etcd_${_etcd_ver}-
 echo
 sleep 2
 cd /tmp
-sha256sum "etcd_${_etcd_ver}-1_static.tar.xz" > "etcd_${_etcd_ver}-1_static.tar.xz".sha256
+openssl dgst -r -sha256 "etcd_${_etcd_ver}-1_static.tar.xz" > "etcd_${_etcd_ver}-1_static.tar.xz".sha256
 
 cd /tmp
 rm -fr /tmp/etcd

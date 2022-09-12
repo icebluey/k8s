@@ -493,7 +493,7 @@ tar --format=gnu -cvf - * | xz --threads=2 -f -z -9 > /tmp/"k8s-${_k8s_ver}-1_am
 echo
 sleep 2
 cd /tmp
-sha256sum "k8s-${_k8s_ver}-1_amd64.tar.xz" > "k8s-${_k8s_ver}-1_amd64.tar.xz".sha256
+openssl dgst -r -sha256 "k8s-${_k8s_ver}-1_amd64.tar.xz" > "k8s-${_k8s_ver}-1_amd64.tar.xz".sha256
 sleep 2
 
 cd /tmp

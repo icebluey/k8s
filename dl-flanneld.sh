@@ -148,7 +148,7 @@ tar --format=gnu -cf - * | xz --threads=2 -v -f -z -9 > /tmp/"flannel_${_tag_ver
 echo
 sleep 2
 cd /tmp
-sha256sum "flannel_${_tag_ver}-1_static.tar.xz" > "flannel_${_tag_ver}-1_static.tar.xz".sha256
+openssl dgst -r -sha256 "flannel_${_tag_ver}-1_static.tar.xz" > "flannel_${_tag_ver}-1_static.tar.xz".sha256
 
 cd /tmp
 rm -fr /tmp/flannel
