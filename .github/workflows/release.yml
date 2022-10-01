@@ -36,14 +36,14 @@ jobs:
           sudo bash dl-flanneld.sh
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           
-          sudo bash dl-k8s.sh "1.23.10"
-          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          #sudo bash dl-k8s.sh "1.23.10"
+          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           
           sudo bash dl-k8s.sh "1.24.4"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           
-          #sudo bash dl-k8s.sh "1.25.1"
-          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo bash dl-k8s.sh "1.25.2"
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           
           sudo sleep 2
           sudo chmod 0644 /tmp/.artifacts/*.tar*
