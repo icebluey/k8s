@@ -262,10 +262,10 @@ chmod 0644 etc/docker/.stop-disable.txt
 ##############################################################################
 
 sleep 2
+#rm -vf usr/bin/containerd-shim-runc-v1
+#rm -vf usr/bin/containerd-shim-runc-v2
+rm -vf usr/bin/containerd-shim*
 rm -vf usr/bin/containerd
-rm -vf usr/bin/containerd-shim
-rm -vf usr/bin/containerd-shim-runc-v1
-rm -vf usr/bin/containerd-shim-runc-v2
 rm -vf usr/bin/ctr
 rm -vf usr/bin/runc
 rm -vfr var/lib/containerd
