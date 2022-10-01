@@ -13,24 +13,24 @@ cd static
 _filename="$(wget -qO- 'https://download.docker.com/linux/static/stable/x86_64/' | grep '<a href="' | sed -e '/extras/d' | grep 'tgz"' | cut -d'"' -f2 | grep 'tgz$' | sort -V | uniq | tail -n 1)"
 _version="$(echo "${_filename}" | sed 's/\.tgz$//g' | cut -d- -f2)"
 echo "Docker version ${_version}"
-wget -q -c -t 0 -T 9 "https://download.docker.com/linux/static/stable/x86_64/${_filename}"
+wget -c -t 0 -T 9 "https://download.docker.com/linux/static/stable/x86_64/${_filename}"
 sleep 2
-tar -xf "${_filename}"
+tar -xof "${_filename}"
 sleep 2
 rm -f "${_filename}"
 
 cd ../rootless-extras
-wget -q -c -t 0 -T 9 "https://download.docker.com/linux/static/stable/x86_64/docker-rootless-extras-${_version}.tgz"
+wget -c -t 0 -T 9 "https://download.docker.com/linux/static/stable/x86_64/docker-rootless-extras-${_version}.tgz"
 sleep 2
-tar -xf "docker-rootless-extras-${_version}.tgz"
+tar -xof "docker-rootless-extras-${_version}.tgz"
 sleep 2
 rm -f "docker-rootless-extras-${_version}.tgz"
 
 cd ../compose
 _compose_version="$(wget -qO- 'https://github.com/docker/compose/releases/' | grep -i '<a href="/docker/compose/tree/' | sed 's/ /\n/g' | grep -i '^href="/docker/compose/tree/' | sed 's@href="/docker/compose/tree/@@g' | sed 's/"//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -1)"
 _compose_file="$(wget -qO- 'https://github.com/docker/compose/releases/' | grep -i 'docker-compose-linux-x86_64' | grep -i "${_compose_version}" | grep -iv '\.sha' | sed 's|"|\n|g' | grep -i '^/docker/compose/releases/download/' | awk -F/ '{print $NF}' | tail -n 1)"
-wget -q -c -t 0 -T 9 "https://github.com/docker/compose/releases/download/${_compose_version}/${_compose_file}.sha256"
-wget -q -c -t 0 -T 9 "https://github.com/docker/compose/releases/download/${_compose_version}/${_compose_file}"
+wget -c -t 0 -T 9 "https://github.com/docker/compose/releases/download/${_compose_version}/${_compose_file}.sha256"
+wget -c -t 0 -T 9 "https://github.com/docker/compose/releases/download/${_compose_version}/${_compose_file}"
 echo
 sleep 2
 sha256sum -c "${_compose_file}.sha256"
@@ -46,7 +46,7 @@ echo
 
 cd ../buildx
 _buildx_ver="$(wget -qO- 'https://github.com/docker/buildx/releases' | grep -i 'a href="/docker/buildx/releases/download/' | sed 's|"|\n|g' | grep -i '^/docker/buildx/releases/download/.*linux-amd64.*' | grep -ivE 'alpha|beta|rc[0-9]' | sed -e 's|.*/buildx-v||g' -e 's|\.linux.*||g' | sort -V | uniq | tail -n 1)"
-wget -q -c -t 0 -T 9 "https://github.com/docker/buildx/releases/download/v${_buildx_ver}/buildx-v${_buildx_ver}.linux-amd64"
+wget -c -t 0 -T 9 "https://github.com/docker/buildx/releases/download/v${_buildx_ver}/buildx-v${_buildx_ver}.linux-amd64"
 sleep 2
 mv -f "buildx-v${_buildx_ver}.linux-amd64" docker-buildx
 sleep 2
