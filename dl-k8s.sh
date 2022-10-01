@@ -42,6 +42,9 @@ _clean_docker () {
 
 set -e
 
+_tmp_dir="$(mktemp -d)"
+cd "${_tmp_dir}"
+
 if [[ -n "${1}" ]]; then
     rm -fr /tmp/kubeadm.bin
     wget -q -c -t 0 -T 9 -O /tmp/kubeadm.bin "https://dl.k8s.io/release/v${1}/bin/linux/amd64/kubeadm"
@@ -56,31 +59,35 @@ fi
 
 _arch="amd64"
 _release_ver="$(wget -qO- 'https://github.com/kubernetes/release/tags' | grep -i 'href="/kubernetes/release/releases/tag/' | sed 's|"|\n|g' | grep -i '^/kubernetes/release/releases/tag' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
+
 _cni_plugins_ver="$(wget -qO- 'https://github.com/containernetworking/plugins/releases' | grep -i "cni-plugins-linux.*\.t" | grep -i 'href="/containernetworking/plugins/releases/download/' | sed 's|"|\n|g' | grep -i '^/containernetworking/plugins/releases/download/' | sed -e 's|.*/v||g' -e 's|/c.*||g' | sort -V | uniq | tail -n 1)"
-_flannel_cni_plugin_ver="$(wget -qO- 'https://github.com/flannel-io/cni-plugin/releases' | grep -i '/flannel-amd64' | sed 's|"|\n|g' | grep -i '^/flannel-io/cni-plugin/releases/download/' | sed -e 's|.*/v||g' -e 's|/.*||g' | sort -V | uniq | tail -n 1)"
-_cri_tools_ver="$(wget -qO- 'https://github.com/kubernetes-sigs/cri-tools/releases' | grep -i 'crictl.*linux.*\.t' | grep -i 'href="/kubernetes-sigs/cri-tools/releases/download/' | sed 's|"|\n|g' | grep -i '^/kubernetes-sigs/cri-tools/releases/download/' | sed -e 's|.*/v||g' -e 's|/c.*||g' | sort -V | uniq | tail -n 1)"
-_istio_ver="$(wget -qO- 'https://github.com/istio/istio/releases' | grep -i 'istio.*linux.*\.t' | grep -i 'href="/istio/istio/releases/download/' | sed 's|"|\n|g' | grep -i '^/istio/istio/releases/download/' | sed 's|/istio/istio/releases/download/||g' | sed 's|/.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
-_metallb_ver="$(wget -qO- 'https://github.com/metallb/metallb/tags' | grep -i 'href="/metallb/metallb/releases/tag/' | sed 's|"|\n|g' | grep -i '^/metallb/metallb/releases/tag/' | sed 's|.*/v||g' | grep -iv 'chart' | sort -V | uniq | tail -n 1)"
-_calico_ver="$(wget -qO- 'https://github.com/projectcalico/calico/releases' | grep -i 'href="/projectcalico/calico/releases/download/.*/release-.*\.tgz' | sed 's|"|\n|g' | grep -i '^/projectcalico/' | grep -ivE 'alpha|beta|rc' | sed -e 's|.*/v||g' -e 's|/.*||g' | sort -V | tail -n 1)"
-
-_tmp_dir="$(mktemp -d)"
-cd "${_tmp_dir}"
-
-wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml" -O kube-dashboard.yaml
-wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml" -O kube-flannel.yaml
-wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml" -O ingress-nginx.yaml
-
 wget -q -c -t 0 -T 9 "https://github.com/containernetworking/plugins/releases/download/v${_cni_plugins_ver}/cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 wget -q -c -t 0 -T 9 "https://github.com/containernetworking/plugins/releases/download/v${_cni_plugins_ver}/cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz"
-wget -q -c -t 0 -T 9 "https://github.com/flannel-io/cni-plugin/releases/download/v${_flannel_cni_plugin_ver}/flannel-amd64"
+
+_cri_tools_ver="$(wget -qO- 'https://github.com/kubernetes-sigs/cri-tools/releases' | grep -i 'crictl.*linux.*\.t' | grep -i 'href="/kubernetes-sigs/cri-tools/releases/download/' | sed 's|"|\n|g' | grep -i '^/kubernetes-sigs/cri-tools/releases/download/' | sed -e 's|.*/v||g' -e 's|/c.*||g' | sort -V | uniq | tail -n 1)"
 wget -q -c -t 0 -T 9 "https://github.com/kubernetes-sigs/cri-tools/releases/download/v${_cri_tools_ver}/crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
 wget -q -c -t 0 -T 9 "https://github.com/kubernetes-sigs/cri-tools/releases/download/v${_cri_tools_ver}/crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
+
+_metallb_ver="$(wget -qO- 'https://github.com/metallb/metallb/tags' | grep -i 'href="/metallb/metallb/releases/tag/' | sed 's|"|\n|g' | grep -i '^/metallb/metallb/releases/tag/' | sed 's|.*/v||g' | grep -iv 'chart' | sort -V | uniq | tail -n 1)"
+wget -q -c -t 0 -T 9 "https://github.com/metallb/metallb/archive/refs/tags/v${_metallb_ver}.tar.gz" -O metallb-${_metallb_ver}.tar.gz
+
+_calico_ver="$(wget -qO- 'https://github.com/projectcalico/calico/releases' | grep -i 'release-.*\.tgz' | sed -e 's|release-|\nrelease-|g' -e 's|tgz|tgz\n|g' | grep -i '^release-.*\.tgz' | sed -e 's|release-v||g' -e 's|\.tgz||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
+wget -q -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${_calico_ver}/release-v${_calico_ver}.tgz"
+
+_dashboard_tag="$(wget -qO- 'https://github.com/kubernetes/dashboard/tags' | grep -i 'href="/kubernetes/dashboard/archive/refs/tags/v[1-9].*\.tar\.gz' | sed 's|"|\n|g' | grep '^/kubernetes/dashboard/archive/refs/tags/.*\.tar\.gz' | sed -e 's|.*tags/||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n 1)"
+wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/dashboard/${_dashboard_tag}/aio/deploy/recommended.yaml" -O kube-dashboard.yaml
+
+_istio_ver="$(wget -qO- 'https://github.com/istio/istio/releases' | grep -i 'istio.*linux.*\.t' | grep -i 'href="/istio/istio/releases/download/' | sed 's|"|\n|g' | grep -i '^/istio/istio/releases/download/' | sed 's|/istio/istio/releases/download/||g' | sed 's|/.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
 wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
 wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istio-${_istio_ver}-linux-${_arch}.tar.gz"
 #wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istioctl-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
 #wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istioctl-${_istio_ver}-linux-${_arch}.tar.gz"
-wget -q -c -t 0 -T 9 "https://github.com/metallb/metallb/archive/refs/tags/v${_metallb_ver}.tar.gz" -O metallb-${_metallb_ver}.tar.gz
-wget -q -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${_calico_ver}/release-v${_calico_ver}.tgz"
+
+_flannel_cni_plugin_ver="$(wget -qO- 'https://github.com/flannel-io/cni-plugin/releases' | grep -i 'href="/flannel-io/cni-plugin/tree/v[0-9]' | sed 's|"|\n|g' | grep '^/flannel-io/cni-plugin/tree/' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
+wget -q -c -t 0 -T 9 "https://github.com/flannel-io/cni-plugin/releases/download/v${_flannel_cni_plugin_ver}/flannel-amd64"
+
+wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml" -O kube-flannel.yaml
+wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml" -O ingress-nginx.yaml
 
 sha256sum -c "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 sleep 1
