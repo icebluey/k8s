@@ -2,6 +2,35 @@
 export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 TZ='UTC'; export TZ
 
+/sbin/ldconfig
+
+_install_go () {
+    cd /tmp
+    rm -fr /tmp/.dl.go.tmp
+    mkdir /tmp/.dl.go.tmp
+    cd /tmp/.dl.go.tmp
+    # Latest version of go
+    #_go_version="$(wget -qO- 'https://golang.org/dl/' | grep -i 'linux-amd64\.tar\.' | sed 's/"/\n/g' | grep -i 'linux-amd64\.tar\.' | cut -d/ -f3 | grep -i '\.gz$' | sed 's/go//g; s/.linux-amd64.tar.gz//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
+
+    # go1.17.X
+    #_go_version="$(wget -qO- 'https://golang.org/dl/' | grep -i 'linux-amd64\.tar\.' | sed 's/"/\n/g' | grep -i 'linux-amd64\.tar\.' | cut -d/ -f3 | grep -i '\.gz$' | sed 's/go//g; s/.linux-amd64.tar.gz//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | grep '^1\.17\.' | tail -n 1)"
+    #wget -q -c -t 0 -T 9 "https://dl.google.com/go/go${_go_version}.linux-amd64.tar.gz"
+
+    # go1.18.X
+    _go_version="$(wget -qO- 'https://golang.org/dl/' | grep -i 'linux-amd64\.tar\.' | sed 's/"/\n/g' | grep -i 'linux-amd64\.tar\.' | cut -d/ -f3 | grep -i '\.gz$' | sed 's/go//g; s/.linux-amd64.tar.gz//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | grep '^1\.18\.' | tail -n 1)"
+    wget -q -c -t 0 -T 9 "https://dl.google.com/go/go${_go_version}.linux-amd64.tar.gz"
+
+    rm -fr /usr/local/go
+    sleep 1
+    mkdir /usr/local/go
+    tar -xf "go${_go_version}.linux-amd64.tar.gz" --strip-components=1 -C /usr/local/go/
+    sleep 1
+    cd /tmp
+    rm -fr /tmp/.dl.go.tmp
+}
+
+_install_go
+
 set -e
 
 _tmp_dir="$(mktemp -d)"
@@ -27,22 +56,52 @@ sleep 2
 rm -f "docker-rootless-extras-${_version}.tgz"
 
 cd ../compose
-_compose_version="$(wget -qO- 'https://github.com/docker/compose/releases/' | grep -i '<a href="/docker/compose/tree/' | sed 's/ /\n/g' | grep -i '^href="/docker/compose/tree/' | sed 's@href="/docker/compose/tree/@@g' | sed 's/"//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -1)"
-_compose_file="$(wget -qO- 'https://github.com/docker/compose/releases/' | grep -i 'docker-compose-linux-x86_64' | grep -i "${_compose_version}" | grep -iv '\.sha' | sed 's|"|\n|g' | grep -i '^/docker/compose/releases/download/' | awk -F/ '{print $NF}' | tail -n 1)"
-wget -c -t 0 -T 9 "https://github.com/docker/compose/releases/download/${_compose_version}/${_compose_file}.sha256"
-wget -c -t 0 -T 9 "https://github.com/docker/compose/releases/download/${_compose_version}/${_compose_file}"
+#_compose_version="$(wget -qO- 'https://github.com/docker/compose/releases/' | grep -i '<a href="/docker/compose/tree/' | sed 's/ /\n/g' | grep -i '^href="/docker/compose/tree/' | sed 's@href="/docker/compose/tree/@@g' | sed 's/"//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -1)"
+#_compose_file="$(wget -qO- 'https://github.com/docker/compose/releases/' | grep -i 'docker-compose-linux-x86_64' | grep -i "${_compose_version}" | grep -iv '\.sha' | sed 's|"|\n|g' | grep -i '^/docker/compose/releases/download/' | awk -F/ '{print $NF}' | tail -n 1)"
+#wget -c -t 0 -T 9 "https://github.com/docker/compose/releases/download/${_compose_version}/${_compose_file}.sha256"
+#wget -c -t 0 -T 9 "https://github.com/docker/compose/releases/download/${_compose_version}/${_compose_file}"
+#echo
+#sleep 2
+#sha256sum -c "${_compose_file}.sha256"
+#rc=$?
+#if [[ $rc != 0 ]]; then
+#    exit 1
+#fi
+#sleep 2
+#rm -f *.sha*
+#echo
+#mv -f "${_compose_file}" docker-compose
+#echo
+
+# Go programming language
+export GOROOT='/usr/local/go'
+export GOPATH="$GOROOT/home"
+export GOTMPDIR='/tmp'
+export GOBIN="$GOROOT/bin"
+export PATH="$GOROOT/bin:$PATH"
+alias go="$GOROOT/bin/go"
+alias gofmt="$GOROOT/bin/gofmt"
 echo
-sleep 2
-sha256sum -c "${_compose_file}.sha256"
-rc=$?
-if [[ $rc != 0 ]]; then
-    exit 1
-fi
-sleep 2
-rm -f *.sha*
+go version
 echo
-mv -f "${_compose_file}" docker-compose
+rm -fr ~/.cache/go-build
+
+git clone 'https://github.com/docker/compose.git' 'compose.build'
+cd compose.build
+sleep 1
+git fetch --all --tags
+sleep 1
+_compose_tag="$(git tag --list | grep -ivE 'alpha|beta|rc|^doc|^1\.|^0\.' |sort -V | uniq | tail -n 1)"
+git checkout "${_compose_tag}"
+sleep 1
+make all
 echo
+sleep 1
+mv -f bin/build/docker-compose ../docker-compose
+echo
+sleep 1
+rm -fr compose.build
+rm -fr /usr/local/go
 
 cd ../buildx
 _buildx_ver="$(wget -qO- 'https://github.com/docker/buildx/releases' | grep -i 'a href="/docker/buildx/releases/download/' | sed 's|"|\n|g' | grep -i '^/docker/buildx/releases/download/.*linux-amd64.*' | grep -ivE 'alpha|beta|rc[0-9]' | sed -e 's|.*/buildx-v||g' -e 's|\.linux.*||g' | sort -V | uniq | tail -n 1)"
