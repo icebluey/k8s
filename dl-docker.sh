@@ -100,6 +100,7 @@ sleep 1
 mv -f bin/build/docker-compose ../docker-compose
 echo
 sleep 1
+cd ..
 rm -fr compose.build
 rm -fr /usr/local/go
 
