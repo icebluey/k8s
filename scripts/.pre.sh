@@ -38,10 +38,9 @@ ln -svf gcov-dump-10 /usr/bin/x86_64-linux-gnu-gcov-dump
 ln -svf gcov-tool-10 /usr/bin/gcov-tool
 ln -svf gcov-tool-10 /usr/bin/x86_64-linux-gnu-gcov-tool
 
-#apt upgrade -y -qqq
+apt upgrade -y
 sleep 2
 /sbin/ldconfig
-
-sleep 2
+echo ' pre done'
 exit
 
