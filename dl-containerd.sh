@@ -92,7 +92,7 @@ sleep 2
 sha256sum -c "containerd-${_containerd_ver}-linux-amd64.tar.gz.sha256sum"
 sleep 2
 rm -f "containerd-${_containerd_ver}-linux-amd64.tar.gz.sha256sum"
-tar -xf "containerd-${_containerd_ver}-linux-amd64.tar.gz"
+tar -xof "containerd-${_containerd_ver}-linux-amd64.tar.gz"
 
 rm -fr /tmp/containerd
 sleep 2
@@ -158,6 +158,7 @@ chmod 0644 etc/containerd/containerd.service
 
 echo '
 cd "$(dirname "$0")"
+[ -f /etc/containerd/config.toml ] || cp -f /etc/containerd/config.toml.example /etc/containerd/config.toml
 rm -f /lib/systemd/system/containerd.service
 sleep 1
 /bin/systemctl daemon-reload
