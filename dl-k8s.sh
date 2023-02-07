@@ -350,7 +350,7 @@ chmod 0644 etc/kubernetes/coredns-resolv.conf.example
 _flannel_network=$(grep -i '"Network":' usr/share/kubernetes/kube-flannel.yaml | awk -F : '{print $2}' | sed 's|[[:blank:]]*||g' | sed 's|[",]||g')
 sed 's| criSocket: .*| criSocket: /run/containerd/containerd.sock|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
 sed "/ serviceSubnet: /i \  podSubnet: ${_flannel_network}" -i usr/share/kubernetes/example-kubeadm-config.yaml
-sed '/ timeoutForControlPlane: /i \  extraArgs: \n\    service-node-port-range: 30000-39999' -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed '/ timeoutForControlPlane: /i \  extraArgs: \n\    service-node-port-range: 20000-39999' -i usr/share/kubernetes/example-kubeadm-config.yaml
 sed '/^controllerManager:/icontrolPlaneEndpoint: "lb_ip:port"' -i usr/share/kubernetes/example-kubeadm-config.yaml
 sed 's| advertiseAddress: .*| advertiseAddress: node_ip|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
 sed 's|  name: node|  name: node_name|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
@@ -398,6 +398,12 @@ net.ipv4.tcp_keepalive_probes = 10" > /etc/sysctl.d/999-k8s.conf
 sleep 1
 chmod 0644 /etc/sysctl.d/999-k8s.conf
 
+if [[ -f /etc/kubernetes/coredns-resolv.conf.example ]] && [[ ! -e /etc/kubernetes/coredns-resolv.conf ]]; then
+    cp -v /etc/kubernetes/coredns-resolv.conf.example /etc/kubernetes/coredns-resolv.conf
+fi
+if [[ -f /etc/systemd/system/kubelet.service.d/10-kubeadm.conf.example ]] && [[ ! -e /etc/systemd/system/kubelet.service.d/10-kubeadm.conf ]]; then
+    cp -v /etc/systemd/system/kubelet.service.d/10-kubeadm.conf.example /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+fi
 sleep 1
 /sbin/sysctl --system >/dev/null 2>&1 || : 
 /bin/systemctl daemon-reload >/dev/null 2>&1 || : 
@@ -451,6 +457,8 @@ yum install -y binutils coreutils util-linux socat ethtool iptables ebtables ipv
 ```
 apt install -y binutils coreutils util-linux socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack iproute2 nfs-common 
 ```
+# example-kubeadm-config.yaml
+kubeadm config print init-defaults
 
 # Initialize a Kubernetes control-plane node
 ## using config yaml file
@@ -463,12 +471,15 @@ kubeadm init --cri-socket /run/containerd/containerd.sock --pod-network-cidr=10.
 echo '\''runtime-endpoint: "unix:///run/containerd/containerd.sock"'\'' > /etc/crictl.yaml
 
 # /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+# vi /etc/sysconfig/kubelet
 # --image-gc-high-threshold=98 --image-gc-low-threshold=96 --minimum-image-ttl-duration=2400h --eviction-hard=nodefs.available<5% --eviction-hard=imagefs.available<5%
+
+# Deploy pods in master node
 kubectl taint nodes --all node-role.kubernetes.io/master:NoSchedule-
 
-
 # Manually change default service-node-port-range
-# Add --service-node-port-range=30000-39999 to /etc/kubernetes/manifests/kube-apiserver.yaml
+# Add --service-node-port-range=20000-39999 to /etc/kubernetes/manifests/kube-apiserver.yaml
 
 # Manually change proxy mode
 modprobe -- ip_vs
@@ -486,7 +497,16 @@ kubectl get configmap kube-proxy -n kube-system -o yaml | \
 sed -e '\''s/strictARP: false/strictARP: true/'\'' | \
 kubectl apply -f - -n kube-system
 
-#MetalLB
+# CNI
+# Deploy Calico
+# <= 50 nodes
+wget https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+kubectl apply -f calico.yaml
+# > 50 nodes
+wget https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico-typha.yaml
+kubectl apply -f calico-typha.yaml
+
+# MetalLB
 # Create namespace metallb-system first
 kubectl create secret generic memberlist -n metallb-system --from-literal=secretkey="$(openssl rand -base64 256)"
 
