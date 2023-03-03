@@ -86,7 +86,8 @@ wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_
 _flannel_cni_plugin_ver="$(wget -qO- 'https://github.com/flannel-io/cni-plugin/releases' | grep -i 'href="/flannel-io/cni-plugin/tree/v[0-9]' | sed 's|"|\n|g' | grep '^/flannel-io/cni-plugin/tree/' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
 wget -q -c -t 0 -T 9 "https://github.com/flannel-io/cni-plugin/releases/download/v${_flannel_cni_plugin_ver}/flannel-amd64"
 
-wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml" -O kube-flannel.yaml
+#wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml" -O kube-flannel.yaml
+
 wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml" -O ingress-nginx.yaml
 
 sha256sum -c "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
@@ -186,7 +187,7 @@ install -v -c -m 0644 10-kubeadm.conf /tmp/kubernetes/etc/systemd/system/kubelet
 install -v -c -m 0644 kubelet.service /tmp/kubernetes/usr/share/kubernetes/
 install -v -c -m 0755 plugins.tmp/* /tmp/kubernetes/usr/share/kubernetes/cni-plugins/
 
-install -v -c -m 0644 kube-flannel.yaml /tmp/kubernetes/usr/share/kubernetes/
+#install -v -c -m 0644 kube-flannel.yaml /tmp/kubernetes/usr/share/kubernetes/
 install -v -c -m 0644 kube-dashboard.yaml /tmp/kubernetes/usr/share/kubernetes/
 install -v -c -m 0644 ingress-nginx.yaml /tmp/kubernetes/usr/share/kubernetes/
 
@@ -250,24 +251,24 @@ sleep 2
 gzip -f -9 usr/share/kubernetes/images/k8s.tar
 ###############################################################################
 
-_images=''
-_images=($(cat usr/share/kubernetes/kube-flannel.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+#_images=''
+#_images=($(cat usr/share/kubernetes/kube-flannel.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
-_clean_start_docker
-for image in ${_images[@]}; do
-    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
-    sleep 2
-done
-echo
-sleep 2
-docker images -a
-echo
-sleep 2
-docker image save -o usr/share/kubernetes/images/flannel.tar ${_images[@]}
-sleep 2
-chmod 0644 usr/share/kubernetes/images/flannel.tar
-sleep 2
-gzip -f -9 usr/share/kubernetes/images/flannel.tar
+#_clean_start_docker
+#for image in ${_images[@]}; do
+#    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+#    sleep 2
+#done
+#echo
+#sleep 2
+#docker images -a
+#echo
+#sleep 2
+#docker image save -o usr/share/kubernetes/images/flannel.tar ${_images[@]}
+#sleep 2
+#chmod 0644 usr/share/kubernetes/images/flannel.tar
+#sleep 2
+#gzip -f -9 usr/share/kubernetes/images/flannel.tar
 ###############################################################################
 
 _images=''
