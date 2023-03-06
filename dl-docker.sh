@@ -12,7 +12,13 @@ mkdir static re-pack compose rootless-extras buildx
 rm -fr /tmp/docker*.tar*
 
 cd static
-_filename="$(wget -qO- 'https://download.docker.com/linux/static/stable/x86_64/' | grep '<a href="' | sed -e '/extras/d' | grep 'tgz"' | cut -d'"' -f2 | grep 'tgz$' | sort -V | uniq | tail -n 1)"
+
+# Latest version
+#_filename="$(wget -qO- 'https://download.docker.com/linux/static/stable/x86_64/' | grep '<a href="' | sed -e '/extras/d' | grep 'tgz"' | cut -d'"' -f2 | grep 'tgz$' | sort -V | uniq | tail -n 1)"
+
+# 20.10.X
+_filename="$(wget -qO- 'https://download.docker.com/linux/static/stable/x86_64/' | grep '<a href="' | sed -e '/extras/d' | grep 'tgz"' | cut -d'"' -f2 | grep 'tgz$' | grep '20\.10\.' | sort -V | uniq | tail -n 1)"
+
 _version="$(echo "${_filename}" | sed 's/\.tgz$//g' | cut -d- -f2)"
 echo "Docker version ${_version}"
 wget -q -c -t 0 -T 9 "https://download.docker.com/linux/static/stable/x86_64/${_filename}"
