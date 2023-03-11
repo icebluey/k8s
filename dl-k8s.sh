@@ -415,13 +415,12 @@ sleep 1
 chmod 0644 etc/kubernetes/coredns-resolv.conf.example
 
 ./usr/bin/kubeadm config print init-defaults | sed "s|kubernetesVersion: .*|kubernetesVersion: ${_k8s_ver}|g" > usr/share/kubernetes/example-kubeadm-config.yaml
-_flannel_network=$(grep -i '"Network":' usr/share/kubernetes/kube-flannel.yaml | awk -F : '{print $2}' | sed 's|[[:blank:]]*||g' | sed 's|[",]||g')
-sed 's| criSocket: .*| criSocket: /run/containerd/containerd.sock|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
-sed "/ serviceSubnet: /i \  podSubnet: ${_flannel_network}" -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed 's| criSocket: .*| criSocket: unix:///run/containerd/containerd.sock|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed "/ serviceSubnet:/i \  podSubnet: 172.16.0.0/12" -i usr/share/kubernetes/example-kubeadm-config.yaml
 sed '/ timeoutForControlPlane: /i \  extraArgs: \n\    service-node-port-range: 20000-39999' -i usr/share/kubernetes/example-kubeadm-config.yaml
 sed '/^controllerManager:/icontrolPlaneEndpoint: "lb_ip:port"' -i usr/share/kubernetes/example-kubeadm-config.yaml
 sed 's| advertiseAddress: .*| advertiseAddress: node_ip|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
-sed 's|  name: node|  name: node_name|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed 's|  name: node|  name: "node_name"|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
 echo '---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
