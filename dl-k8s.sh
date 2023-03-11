@@ -208,6 +208,18 @@ cp -pfr "calico-${_calico_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
 cd /tmp/kubernetes
 sleep 1
+
+# jq
+rm -fr /tmp/jq
+wget -q -c "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -O /tmp/jq
+chmod 0755 /tmp/jq
+strip /tmp/jq
+install -m 0755 -d usr/share/kubernetes/jq
+sleep 1
+install -m 0755 /tmp/jq usr/share/kubernetes/jq/jq
+sleep 1
+rm -f /tmp/jq
+
 #echo '
 #kubectl create secret generic memberlist -n metallb-system --from-literal=secretkey="$(openssl rand -base64 256)"
 #' > usr/share/kubernetes/metallb-${_metallb_ver}/manifests/create-secret.sh
@@ -412,6 +424,8 @@ sleep 1
 
 echo 'install -m 0755 -d /opt/cni/bin
 install -m 0755 cni-plugins/* /opt/cni/bin/
+
+[ -f /usr/bin/jq ] || install -m 0755 jq/jq /usr/bin/
 ' >> usr/share/kubernetes/.install.txt
 
 echo '
@@ -450,9 +464,14 @@ sleep 1
 chmod 0755 usr/share/kubernetes/load-calico-images.sh
 
 echo '# Install the dependencies
+## RHEL 8
+```
+yum install -y binutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
+yum install -y coreutils-single
+```
 ## RHEL 7 / CentOS 7
 ```
-yum install -y binutils coreutils util-linux socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
+yum install -y binutils coreutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
 ```
 ## Debian / Ubuntu 20.04
 ```
