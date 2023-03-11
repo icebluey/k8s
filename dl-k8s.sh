@@ -267,7 +267,7 @@ for image in ${_images[@]}; do
 done
 chmod 0644 usr/share/kubernetes/images/kubeadm/*.tar
 sleep 1
-/bin/ls -1 usr/share/kubernetes/images/kubeadm/*.tar | xargs -r -I '{}' gzip -f -9 '{}'
+/bin/ls -1 usr/share/kubernetes/images/kubeadm/*.tar | xargs --no-run-if-empty -I '{}' gzip -f -9 '{}'
 sleep 2
 ###############################################################################
 
@@ -492,8 +492,9 @@ systemctl start containerd.service > /dev/null 2>&1 || :
 sleep 10
 if ! ctr namespaces list | sed "1d" | grep -q -i "k8s\.io"; then ctr namespaces create "k8s.io"; fi
 sleep 1
-ls -1 *.tar.gz 2>/dev/null | xargs -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
-ls -1 *.tar 2>/dev/null | xargs -I "{}" ctr --namespace "k8s.io" images import "{}"
+/bin/ls -1 kubeadm/*.tar.gz 2>/dev/null | xargs --no-run-if-empty -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
+/bin/ls -1 *.tar.gz 2>/dev/null | xargs --no-run-if-empty -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
+/bin/ls -1 *.tar 2>/dev/null | xargs --no-run-if-empty -I "{}" ctr --namespace "k8s.io" images import "{}"
 echo
 sleep 1
 ctr --namespace "k8s.io" images ls -q | grep -iv "^sha256:"
@@ -507,7 +508,7 @@ chmod 0755 usr/share/kubernetes/load-all-images.sh
 echo '
 cd "$(dirname "$0")"
 cd calico-[1-9]*/
-ls -1 images/*.tar.gz 2>/dev/null | xargs -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
+/bin/ls -1 images/*.tar.gz 2>/dev/null | xargs --no-run-if-empty -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
 echo
 sleep 1
 ctr --namespace "k8s.io" images ls -q | grep -iv "^sha256:"
