@@ -243,8 +243,36 @@ if [[ "$(./usr/bin/kubeadm config images list 2>&1 | grep -iE 'k8s\.gcr|k8s\.io'
     #exit 1
 fi
 
+# save images
+
+rm -fr usr/share/kubernetes/images/kubeadm
+install -m 0755 -d usr/share/kubernetes/images/kubeadm
 _images=''
-_images=($(./usr/bin/kubeadm config images list 2>/dev/null) $(cat usr/share/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+_images=($(./usr/bin/kubeadm config images list 2>/dev/null))
+###############################################################################
+for image in ${_images[@]}; do
+    sleep 1
+    _clean_start_docker
+    sleep 5
+    _name="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $1}')"
+    _ver="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $2}' | sed 's|^[Vv]||g')"
+    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+    sleep 2
+    docker images -a
+    sleep 2
+    docker image save -o usr/share/kubernetes/images/kubeadm/"${_name}_${_ver}.tar" "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+    sleep 2
+    _name=''
+    _ver=''
+done
+chmod 0644 usr/share/kubernetes/images/kubeadm/*.tar
+sleep 1
+/bin/ls -1 usr/share/kubernetes/images/kubeadm/*.tar | xargs -r -I '{}' gzip -f -9 '{}'
+sleep 2
+###############################################################################
+
+_images=''
+_images=($(cat usr/share/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
 _clean_start_docker
 for image in ${_images[@]}; do
@@ -256,11 +284,33 @@ sleep 2
 docker images -a
 echo
 sleep 2
-docker image save -o usr/share/kubernetes/images/k8s.tar ${_images[@]}
+docker image save -o usr/share/kubernetes/images/kube-dashboard.tar ${_images[@]}
 sleep 2
-chmod 0644 usr/share/kubernetes/images/k8s.tar
+chmod 0644 usr/share/kubernetes/images/kube-dashboard.tar
 sleep 2
-gzip -f -9 usr/share/kubernetes/images/k8s.tar
+gzip -f -9 usr/share/kubernetes/images/kube-dashboard.tar
+sleep 2
+###############################################################################
+
+#_images=''
+#_images=($(./usr/bin/kubeadm config images list 2>/dev/null) $(cat usr/share/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+################################################################################
+#_clean_start_docker
+#for image in ${_images[@]}; do
+#    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+#    sleep 2
+#done
+#echo
+#sleep 2
+#docker images -a
+#echo
+#sleep 2
+#docker image save -o usr/share/kubernetes/images/k8s.tar ${_images[@]}
+#sleep 2
+#chmod 0644 usr/share/kubernetes/images/k8s.tar
+#sleep 2
+#gzip -f -9 usr/share/kubernetes/images/k8s.tar
+#sleep 2
 ###############################################################################
 
 #_images=''
@@ -281,6 +331,7 @@ gzip -f -9 usr/share/kubernetes/images/k8s.tar
 #chmod 0644 usr/share/kubernetes/images/flannel.tar
 #sleep 2
 #gzip -f -9 usr/share/kubernetes/images/flannel.tar
+#sleep 2
 ###############################################################################
 
 _images=''
@@ -294,6 +345,7 @@ sleep 2
 chmod 0644 usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar
 sleep 2
 gzip -f -9 usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar
+sleep 2
 ###############################################################################
 
 _images=''
@@ -311,6 +363,7 @@ sleep 2
 chmod 0644 usr/share/kubernetes/images/ingress-nginx.tar
 sleep 2
 gzip -f -9 usr/share/kubernetes/images/ingress-nginx.tar
+sleep 2
 ###############################################################################
 
 _images=''
@@ -329,6 +382,7 @@ sleep 2
 chmod 0644 usr/share/kubernetes/images/"metallb-${_metallb_ver}".tar
 sleep 2
 gzip -f -9 usr/share/kubernetes/images/"metallb-${_metallb_ver}".tar
+sleep 2
 ###############################################################################
 
 _images=''
@@ -344,6 +398,7 @@ sleep 2
 chmod 0644 usr/share/kubernetes/images/"istio-${_istio_ver}".tar
 sleep 2
 gzip -f -9 usr/share/kubernetes/images/"istio-${_istio_ver}".tar
+sleep 2
 ###############################################################################
 
 sleep 2
