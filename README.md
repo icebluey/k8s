@@ -2,7 +2,6 @@
 ## RHEL 8
 ```
 yum install -y binutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
-yum install -y coreutils-single
 ```
 ## RHEL 7 / CentOS 7
 ```
