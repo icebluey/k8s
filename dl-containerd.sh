@@ -27,7 +27,7 @@ _install_go () {
     rm -fr /usr/local/go
     sleep 1
     mkdir /usr/local/go
-    tar -xf "go${_go_version}.linux-amd64.tar.gz" --strip-components=1 -C /usr/local/go/
+    tar -xof "go${_go_version}.linux-amd64.tar.gz" --strip-components=1 -C /usr/local/go/
     sleep 1
     cd /tmp
     rm -fr /tmp/.dl.go.tmp
