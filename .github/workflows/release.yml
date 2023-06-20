@@ -42,10 +42,13 @@ jobs:
           #sudo bash dl-k8s.sh "1.24.4"
           #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           
-          sudo bash dl-k8s.sh "1.25.6"
+          #sudo bash dl-k8s.sh "1.25.6"
+          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+
+          sudo bash dl-k8s.sh "1.26.6"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
 
-          sudo bash dl-k8s.sh "1.26.1"
+          sudo bash dl-k8s.sh "1.27.3"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
 
           sudo sleep 2
