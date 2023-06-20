@@ -336,16 +336,16 @@ sleep 2
 
 _images=''
 ###############################################################################
-_clean_start_docker
-_traefik_ver="$(wget -qO- 'https://github.com/traefik/traefik/releases' | grep -i 'href="/traefik/traefik/releases/download/' | sed 's|"|\n|g' | grep -i '^/traefik/traefik/releases/download/' | sed -e 's|.*/v||g' -e 's|/traefik.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
-docker pull "traefik:v${_traefik_ver}"
-sleep 2
-docker image save -o usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar "traefik:v${_traefik_ver}"
-sleep 2
-chmod 0644 usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar
-sleep 2
-gzip -f -9 usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar
-sleep 2
+#_clean_start_docker
+#_traefik_ver="$(wget -qO- 'https://github.com/traefik/traefik/releases' | grep -i 'href="/traefik/traefik/releases/download/' | sed 's|"|\n|g' | grep -i '^/traefik/traefik/releases/download/' | sed -e 's|.*/v||g' -e 's|/traefik.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
+#docker pull "traefik:v${_traefik_ver}"
+#sleep 2
+#docker image save -o usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar "traefik:v${_traefik_ver}"
+#sleep 2
+#chmod 0644 usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar
+#sleep 2
+#gzip -f -9 usr/share/kubernetes/images/"traefik-${_traefik_ver}".tar
+#sleep 2
 ###############################################################################
 
 _images=''
@@ -452,7 +452,7 @@ fs.file-max = 6553600
 vm.max_map_count = 655360
 net.core.somaxconn = 32768
 net.netfilter.nf_conntrack_max = 1000000
-net.ipv4.ip_local_port_range = 40000 65000
+net.ipv4.ip_local_port_range = 40000 65500
 net.ipv4.ip_forward = 1
 net.ipv4.tcp_fin_timeout = 30
 net.ipv4.tcp_tw_reuse = 1
@@ -518,20 +518,20 @@ crictl -r unix:///run/containerd/containerd.sock images
 sleep 1
 chmod 0755 usr/share/kubernetes/load-calico-images.sh
 
-echo '# Install the dependencies
-## RHEL 8
+echo '## Install the dependencies
+#### RHEL 8
 ```
 yum install -y binutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
-yum install -y coreutils-single
 ```
-## RHEL 7 / CentOS 7
+#### RHEL 7 / CentOS 7
 ```
 yum install -y binutils coreutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
 ```
-## Debian / Ubuntu 20.04
+#### Debian / Ubuntu 20.04
 ```
 apt install -y binutils coreutils util-linux socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack iproute2 nfs-common 
 ```
+
 # example-kubeadm-config.yaml
 kubeadm config print init-defaults
 
