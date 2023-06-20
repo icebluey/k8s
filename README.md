@@ -1,13 +1,89 @@
-# Install the dependencies
-## RHEL 8
+## Install the dependencies
+#### RHEL 8
 ```
 yum install -y binutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
 ```
-## RHEL 7 / CentOS 7
+#### RHEL 7 / CentOS 7
 ```
 yum install -y binutils coreutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
 ```
-## Debian / Ubuntu 20.04+
+#### Debian / Ubuntu 20.04+
 ```
 apt install -y binutils coreutils util-linux socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack iproute2 nfs-common 
 ```
+
+## Settings for the kubelet
+#### /etc/sysconfig/kubelet
+```
+KUBELET_EXTRA_ARGS="--resolv-conf=/etc/kubernetes/coredns-resolv.conf"
+```
+#### /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+```
+# Note: This dropin only works with kubeadm and kubelet v1.11+
+[Service]
+Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
+Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"
+# This is a file that "kubeadm init" and "kubeadm join" generates at runtime, populating the KUBELET_KUBEADM_ARGS variable dynamically
+EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
+# This is a file that the user can use for overrides of the kubelet args as a last resort. Preferably, the user should use
+# the .NodeRegistration.KubeletExtraArgs object in the configuration files instead. KUBELET_EXTRA_ARGS should be sourced from this file.
+EnvironmentFile=-/etc/sysconfig/kubelet
+ExecStart=
+ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS
+```
+
+## Settings for the kubelet kubeadm
+#### kubeadm-config.yaml
+```
+apiVersion: kubeadm.k8s.io/v1beta3
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 192.168.10.101
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /run/containerd/containerd.sock
+  imagePullPolicy: IfNotPresent
+  name: "k8s-master1"
+  taints: null
+---
+apiServer:
+  extraArgs: 
+    service-node-port-range: 20000-49999
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta3
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controlPlaneEndpoint: "192.168.10.101:6443"
+controllerManager: {}
+dns: {}
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: registry.k8s.io
+kind: ClusterConfiguration
+kubernetesVersion: 1.26.6
+networking:
+  dnsDomain: cluster.local
+  podSubnet: 172.16.0.0/12
+  serviceSubnet: 10.96.0.0/12
+scheduler: {}
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "ipvs"
+ipvs:
+  strictARP: true
+```
+#### To initialize a Kubernetes control-plane node
+```
+kubeadm init --config kubeadm-config.yaml
+```
+
