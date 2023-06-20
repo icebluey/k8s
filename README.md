@@ -82,8 +82,31 @@ mode: "ipvs"
 ipvs:
   strictARP: true
 ```
-#### To initialize a Kubernetes control-plane node
+#### Initialize a Kubernetes control-plane node
 ```
 kubeadm init --config kubeadm-config.yaml
+```
+
+#### Pull images using Containerd
+```
+ctr namespaces list
+ctr namespaces create "k8s.io"
+
+# https://hub.docker.com/_/nginx
+ctr --namespace "k8s.io" images pull docker.io/library/nginx:1.23.3
+
+# https://hub.docker.com/r/istio/proxyv2
+ctr --namespace "k8s.io" images pull docker.io/istio/proxyv2:latest
+
+# registry.k8s.io/pause:3.9
+# ctr --namespace "k8s.io" images pull registry.k8s.io/pause:3.9
+```
+#### List images
+```
+ctr images ls
+ctr --namespace "k8s.io" images ls -q | grep -iv "^sha[125]"
+
+crictl images
+crictl -r unix:///run/containerd/containerd.sock images
 ```
 
