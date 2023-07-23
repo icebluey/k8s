@@ -4,11 +4,11 @@ TZ='UTC'; export TZ
 
 umask 022
 
-#https://dl.k8s.io/release/v1.24.4/bin/linux/amd64/kubeadm
-#https://dl.k8s.io/release/v1.24.4/bin/linux/amd64/kubelet
-#https://dl.k8s.io/release/v1.24.4/bin/linux/amd64/kubectl
+#https://dl.k8s.io/release/v1.27.4/bin/linux/amd64/kubeadm
+#https://dl.k8s.io/release/v1.27.4/bin/linux/amd64/kubelet
+#https://dl.k8s.io/release/v1.27.4/bin/linux/amd64/kubectl
 
-_clean_start_docker () {
+_clean_start_docker() {
     systemctl daemon-reload > /dev/null 2>&1 || : 
     sleep 1
     systemctl stop docker.socket > /dev/null 2>&1 || : 
@@ -25,7 +25,7 @@ _clean_start_docker () {
     sleep 2
 }
 
-_clean_docker () {
+_clean_docker() {
     systemctl daemon-reload > /dev/null 2>&1 || : 
     sleep 1
     systemctl stop docker.socket > /dev/null 2>&1 || : 
@@ -155,8 +155,8 @@ _files=(
 'kubeadm'
 'kubectl'
 'kubelet'
-'kubectl-convert'
 'kube-proxy'
+'kubectl-convert'
 )
 
 for file in ${_files[@]}; do
