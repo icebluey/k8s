@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 TZ='UTC'; export TZ
-
+umask 022
 set -e
 
 _tmp_dir="$(mktemp -d)"
