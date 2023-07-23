@@ -1,45 +1,75 @@
-# ubuntu 20.04
-
-apt update -y -qqq
-
-apt install -y -qqq bash
-sleep 1
-ln -svf bash /bin/sh
-
+#!/usr/bin/env bash
+export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+TZ='UTC'; export TZ
+umask 022
 ln -svf ../usr/share/zoneinfo/UTC /etc/localtime
-DEBIAN_FRONTEND=noninteractive apt install -y tzdata
+DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata
 dpkg-reconfigure --frontend noninteractive tzdata
-
-apt install -y -qqq binutils coreutils findutils util-linux libc-bin passwd pkg-config
-apt install -y -qqq make gcc g++ perl libperl-dev groff-base dpkg-dev cmake libtool m4
-apt install -y -qqq zlib1g-dev libzstd-dev liblzma-dev libbz2-dev gzip bzip2 xz-utils tar
-apt install -y -qqq libssl-dev openssl ca-certificates wget curl git sed grep gawk
-apt install -y -qqq file patch procps iproute2 net-tools iputils-ping
-apt install -y -qqq libseccomp-dev libseccomp2
-
-# install gcc 10
-apt install -y -qqq gcc-10 g++-10 libstdc++-10-dev cpp-10
-sleep 2
-ln -svf cpp-10 /usr/bin/x86_64-linux-gnu-cpp
-ln -svf g++-10 /usr/bin/g++
-ln -svf g++-10 /usr/bin/x86_64-linux-gnu-g++
-ln -svf gcc-10 /usr/bin/gcc
-ln -svf gcc-10 /usr/bin/x86_64-linux-gnu-gcc
-ln -svf gcc-ar-10 /usr/bin/gcc-ar
-ln -svf gcc-ar-10 /usr/bin/x86_64-linux-gnu-gcc-ar
-ln -svf gcc-nm-10 /usr/bin/gcc-nm
-ln -svf gcc-nm-10 /usr/bin/x86_64-linux-gnu-gcc-nm
-ln -svf gcc-ranlib-10 /usr/bin/gcc-ranlib
-ln -svf gcc-ranlib-10 /usr/bin/x86_64-linux-gnu-gcc-ranlib
-ln -svf gcov-10 /usr/bin/gcov
-ln -svf gcov-10 /usr/bin/x86_64-linux-gnu-gcov
-ln -svf gcov-dump-10 /usr/bin/gcov-dump
-ln -svf gcov-dump-10 /usr/bin/x86_64-linux-gnu-gcov-dump
-ln -svf gcov-tool-10 /usr/bin/gcov-tool
-ln -svf gcov-tool-10 /usr/bin/x86_64-linux-gnu-gcov-tool
-
-apt upgrade -y -qqq
-sleep 2
-/sbin/ldconfig
+snap remove --purge lxd
+snap remove --purge firefox
+snap remove --purge snap-store
+snap remove --purge core
+snap remove --purge core18
+snap remove --purge core20
+snap remove --purge snapd-desktop-integration
+systemctl stop docker.socket
+systemctl stop podman.socket
+systemctl stop docker.service
+systemctl stop containerd.service
+systemctl stop podman.service
+systemctl disable docker.socket
+systemctl disable podman.socket
+systemctl disable docker.service
+systemctl disable containerd.service
+systemctl disable podman.service
+systemctl stop snapd.service
+systemctl stop snapd.socket
+systemctl stop snapd.seeded.service
+systemctl disable snapd.service
+systemctl disable snapd.socket
+systemctl disable snapd.seeded.service
+apt autoremove --purge -y snapd
+apt autoremove --purge -y firefox
+apt autoremove --purge -y moby-engine
+apt autoremove --purge -y moby-cli
+apt autoremove --purge -y moby-buildx
+apt autoremove --purge -y moby-compose
+apt autoremove --purge -y moby-containerd
+apt autoremove --purge -y moby-runc
+apt autoremove --purge -y podman
+apt autoremove --purge -y crun
+rm -fr ~/snap
+rm -fr /snap
+rm -fr /var/snap
+rm -fr /var/lib/snapd
+rm -fr /var/cache/snapd
+rm -fr /tmp/snap*
+rm -fr /etc/apt/preferences.d/firefox*
+systemctl stop systemd-resolved.service
+systemctl stop systemd-timesyncd
+systemctl stop unattended-upgrades
+systemctl stop udisks2.service
+systemctl disable systemd-resolved.service
+systemctl disable systemd-timesyncd
+systemctl disable unattended-upgrades
+systemctl disable udisks2.service
+rm -fr /etc/resolv.conf
+echo "nameserver 8.8.8.8" >/etc/resolv.conf 
+apt install -y chrony
+systemctl stop chrony.service
+sed -e "/^pool/d" -i /etc/chrony/chrony.conf
+sed -e "/^server/d" -i /etc/chrony/chrony.conf
+sed -e "s|^refclock|#refclock|g" -i /etc/chrony/chrony.conf
+sed -e "1iserver time1.google.com iburst minpoll 4 maxpoll 5\nserver time2.google.com iburst minpoll 4 maxpoll 5\nserver time3.google.com iburst minpoll 4 maxpoll 5\nserver time4.google.com iburst minpoll 4 maxpoll 5" -i /etc/chrony/chrony.conf
+systemctl start chrony.service
+systemctl enable chrony.service
+sleep 10
+chronyc makestep
+apt install -y binutils coreutils util-linux findutils diffutils pkg-config
+apt install -y systemd passwd patch sed gawk grep file tar gzip bzip2 xz-utils
+apt install -y socat ethtool ipvsadm ipset psmisc bash-completion conntrack iproute2 nfs-common
+apt install -y daemon procps net-tools
+apt install -y iptables
+apt install -y ebtables
+apt install -y nftables
 exit
-
