@@ -90,8 +90,10 @@ wget -c -t 0 -T 9 "https://github.com/metallb/metallb/archive/refs/tags/v${_meta
 _calico_ver="$(wget -qO- 'https://github.com/projectcalico/calico/releases' | grep -i 'release-.*\.tgz' | sed -e 's|release-|\nrelease-|g' -e 's|tgz|tgz\n|g' | grep -i '^release-.*\.tgz' | sed -e 's|release-v||g' -e 's|\.tgz||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
 wget -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${_calico_ver}/release-v${_calico_ver}.tgz"
 
-_dashboard_tag="$(wget -qO- 'https://github.com/kubernetes/dashboard/tags' | grep -i 'href="/kubernetes/dashboard/archive/refs/tags/v[1-9].*\.tar\.gz' | sed 's|"|\n|g' | grep '^/kubernetes/dashboard/archive/refs/tags/.*\.tar\.gz' | sed -e 's|.*tags/||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n 1)"
-wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/dashboard/${_dashboard_tag}/aio/deploy/recommended.yaml" -O kube-dashboard.yaml
+#_dashboard_tag="$(wget -qO- 'https://github.com/kubernetes/dashboard/tags' | grep -i 'href="/kubernetes/dashboard/archive/refs/tags/v[1-9].*\.tar\.gz' | sed 's|"|\n|g' | grep '^/kubernetes/dashboard/archive/refs/tags/.*\.tar\.gz' | sed -e 's|.*tags/||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n 1)"
+#wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/dashboard/${_dashboard_tag}/aio/deploy/recommended.yaml" -O kube-dashboard.yaml
+_dashboard_url="$(wget -qO- 'https://github.com/kubernetes/dashboard/releases' | grep -i 'https://raw.githubusercontent.com/kubernetes/dashboard/v' | sed -e 's| |\n|g' -e 's|"|\n|g' | grep -i '^https://raw.githubusercontent.com/kubernetes/dashboard/v' | sed 's|\.yaml.*|.yaml|g' | grep -ivE 'alpha|beta|rc[0-9]' | sort -V | uniq | tail -n1)"
+wget -c -t 0 -T 9 "${_dashboard_url}" -O kube-dashboard.yaml
 
 _istio_ver="$(wget -qO- 'https://github.com/istio/istio/releases' | grep -i 'istio.*linux.*\.t' | grep -i 'href="/istio/istio/releases/download/' | sed 's|"|\n|g' | grep -i '^/istio/istio/releases/download/' | sed 's|/istio/istio/releases/download/||g' | sed 's|/.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
 wget -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
