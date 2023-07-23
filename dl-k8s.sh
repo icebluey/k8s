@@ -20,6 +20,7 @@ _clean_start_docker() {
     sleep 1
     ip link delete docker0 > /dev/null 2>&1 || : 
     rm -fr /var/lib/docker/*
+    systemctl start containerd.service
     sleep 2
     systemctl start docker.service
     sleep 2
