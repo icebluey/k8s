@@ -41,6 +41,7 @@ _clean_docker() {
     rm -fr /var/lib/docker/*
     sleep 1
 }
+_clean_docker
 
 set -e
 
@@ -65,6 +66,8 @@ docker cp build-k8s-bin.sh al8:/home/
 docker exec al8 /bin/bash /home/build-k8s-bin.sh "${_k8s_ver}"
 rm -fr /tmp/.k8s_bin
 docker cp al8:/tmp/.k8s_bin /tmp/
+sleep 10
+_clean_docker
 
 _tmp_dir="$(mktemp -d)"
 cd "${_tmp_dir}"
@@ -622,5 +625,5 @@ sleep 2
 echo
 echo " package k8s ${_k8s_ver} done"
 echo
+_clean_docker
 exit
-
