@@ -58,7 +58,4 @@ cd /tmp
 rm -fr "${_tmp_dir}"
 bash /etc/containerd/.install.txt
 bash /etc/docker/.install.txt
-systemctl start containerd.service >/dev/null 2>&1 || :
-sleep 2
-systemctl start docker.service >/dev/null 2>&1 || :
 exit
