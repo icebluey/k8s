@@ -95,7 +95,7 @@ apt install -y libedit-dev libssh2-1-dev libpam0g-dev libsystemd-dev groff-base
 apt install -y libsystemd-dev libcrypt-dev
 apt install -y libtinfo-dev libncurses-dev
 # run keepalived
-apt install -y libnl-3-200 libnl-genl-3-200 libsnmp-dev libnftnl11 libsystemd0
+apt install -y libnl-3-200 libnl-genl-3-200 libsnmp-dev libnftnl-dev libsystemd0
 apt install -y libnftables-dev nftables
 apt install -y libipset-dev ipset
 apt install -y iptables
