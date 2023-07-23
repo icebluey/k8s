@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 TZ='UTC'; export TZ
-
 umask 022
+
+cd "$(dirname "$0")"
 
 #https://dl.k8s.io/release/v1.27.4/bin/linux/amd64/kubeadm
 #https://dl.k8s.io/release/v1.27.4/bin/linux/amd64/kubelet
@@ -43,9 +44,6 @@ _clean_docker() {
 
 set -e
 
-_tmp_dir="$(mktemp -d)"
-cd "${_tmp_dir}"
-
 if [[ -n "${1}" ]]; then
     rm -fr /tmp/kubeadm.bin
     wget -q -c -t 0 -T 9 -O /tmp/kubeadm.bin "https://dl.k8s.io/release/v${1}/bin/linux/amd64/kubeadm"
@@ -57,6 +55,19 @@ if [[ -n "${1}" ]]; then
 else
     _k8s_ver="$(wget -qO- "https://dl.k8s.io/release/stable.txt" | sed 's|^[Vv]||g')"
 fi
+_clean_start_docker
+docker run --cpus="2.0" --hostname 'x86-040.build.eng.bos.redhat.com' --rm --name al8 -itd icebluey/almalinux:8 bash
+chmod 0755 build-k8s-bin.sh
+docker exec al8 yum clean all
+docker exec al8 yum makecache
+docker exec al8 /bin/bash -c 'rm -fr /tmp/*'
+docker cp build-k8s-bin.sh al8:/home/
+docker exec al8 /bin/bash /home/build-k8s-bin.sh "${_k8s_ver}"
+rm -fr /tmp/.k8s_bin
+docker cp al8:/tmp/.k8s_bin /tmp/
+
+_tmp_dir="$(mktemp -d)"
+cd "${_tmp_dir}"
 
 _arch="amd64"
 _release_ver="$(wget -qO- 'https://github.com/kubernetes/release/tags' | grep -i 'href="/kubernetes/release/releases/tag/' | sed 's|"|\n|g' | grep -i '^/kubernetes/release/releases/tag' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
@@ -95,7 +106,7 @@ sha256sum -c "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 sleep 1
 rm -f "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 mkdir plugins.tmp
-tar -xf "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz" -C plugins.tmp/
+tar -xof "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz" -C plugins.tmp/
 sleep 1
 rm -f "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz"
 ls -la plugins.tmp/portmap
@@ -109,7 +120,7 @@ mv -f flannel-amd64 plugins.tmp/flannel
 echo "$(awk '{print $1}' "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256")  crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz" | sha256sum -c -
 sleep 1
 rm -f "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
-tar -xf "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
+tar -xof "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
 sleep 1
 rm -f "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
 
@@ -119,19 +130,19 @@ sleep 1
 rm -f "istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
 #rm -f "istioctl-${_istio_ver}-linux-${_arch}.tar.gz"
 rm -fr istioctl
-tar -xf "istio-${_istio_ver}-linux-${_arch}.tar.gz"
+tar -xof "istio-${_istio_ver}-linux-${_arch}.tar.gz"
 sleep 1
 rm -f "istio-${_istio_ver}-linux-${_arch}.tar.gz"
 mv -f "istio-${_istio_ver}/bin/istioctl" ./
 sleep 1
 rm -fr "istio-${_istio_ver}/bin"
 
-tar -xf "metallb-${_metallb_ver}.tar.gz"
+tar -xof "metallb-${_metallb_ver}.tar.gz"
 sleep 1
 rm -f "metallb-${_metallb_ver}.tar.gz"
 
 mkdir /tmp/.calico.extr.tmp
-tar -xf "release-v${_calico_ver}.tgz" -C /tmp/.calico.extr.tmp/
+tar -xof "release-v${_calico_ver}.tgz" -C /tmp/.calico.extr.tmp/
 sleep 1
 rm -f "release-v${_calico_ver}.tgz"
 _calico_release_dir="$(find /tmp/.calico.extr.tmp/ -type f -iname 'calicoctl' -o -iname 'calicoctl-linux-amd64' | grep '/bin/calicoctl' | sed 's|/bin/.*||g' | sort | uniq | tail -n 1)"
@@ -152,21 +163,21 @@ sleep 1
 ls -1 "calico-${_calico_ver}"/images/*.tar | xargs -I '{}' gzip -f -9 '{}'
 find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | grep -iv '/calico-bpf' | xargs --no-run-if-empty -I '{}' strip '{}'
 
-_files=(
-'kubeadm'
-'kubectl'
-'kubelet'
-'kube-proxy'
-'kubectl-convert'
-)
+#_files=(
+#'kubeadm'
+#'kubectl'
+#'kubelet'
+#'kube-proxy'
+#'kubectl-convert'
+#)
+#for file in ${_files[@]}; do
+#    wget -q -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}.sha256"
+#    wget -q -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}"
+#    echo "$(<${file}.sha256)  ${file}" | sha256sum --check
+#done
+#sleep 1
+#rm -f kube*.sha256
 
-for file in ${_files[@]}; do
-    wget -q -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}.sha256"
-    wget -q -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}"
-    echo "$(<${file}.sha256)  ${file}" | sha256sum --check
-done
-sleep 1
-rm -f kube*.sha256
 wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
 wget -q -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/rpm/kubeadm/10-kubeadm.conf"
 
@@ -180,9 +191,14 @@ install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/cni-plugins
 install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/images
 install -m 0755 -d /tmp/kubernetes/etc/sysconfig
 
-for file in ${_files[@]}; do
-    install -v -c -m 0755 ${file} /tmp/kubernetes/usr/bin/
-done
+#for file in ${_files[@]}; do
+#    install -v -c -m 0755 ${file} /tmp/kubernetes/usr/bin/
+#done
+
+install -v -c -m 0755 /tmp/.k8s_bin/* /tmp/kubernetes/usr/bin/
+sleep 2
+rm -fr /tmp/.k8s_bin
+
 install -v -c -m 0755 crictl /tmp/kubernetes/usr/bin/
 install -v -c -m 0644 10-kubeadm.conf /tmp/kubernetes/etc/systemd/system/kubelet.service.d/10-kubeadm.conf.example
 install -v -c -m 0644 kubelet.service /tmp/kubernetes/usr/share/kubernetes/
