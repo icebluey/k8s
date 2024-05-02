@@ -74,7 +74,6 @@ _tmp_dir="$(mktemp -d)"
 cd "${_tmp_dir}"
 
 _arch="amd64"
-_release_ver="$(wget -qO- 'https://github.com/kubernetes/release/tags' | grep -i 'href="/kubernetes/release/releases/tag/' | sed 's|"|\n|g' | grep -i '^/kubernetes/release/releases/tag' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
 
 _cni_plugins_ver="$(wget -qO- 'https://github.com/containernetworking/plugins/releases' | grep -i "cni-plugins-linux.*\.t" | grep -i 'href="/containernetworking/plugins/releases/download/' | sed 's|"|\n|g' | grep -i '^/containernetworking/plugins/releases/download/' | sed -e 's|.*/v||g' -e 's|/c.*||g' | sort -V | uniq | tail -n 1)"
 wget -c -t 0 -T 9 "https://github.com/containernetworking/plugins/releases/download/v${_cni_plugins_ver}/cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
@@ -184,8 +183,12 @@ find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.
 #sleep 1
 #rm -f kube*.sha256
 
-wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
-wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/rpm/kubeadm/10-kubeadm.conf"
+#_release_ver="$(wget -qO- 'https://github.com/kubernetes/release/tags' | grep -i 'href="/kubernetes/release/releases/tag/' | sed 's|"|\n|g' | grep -i '^/kubernetes/release/releases/tag' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
+#wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
+#wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/rpm/kubeadm/10-kubeadm.conf"
+
+wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v0.16.2/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
+wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v0.16.2/cmd/kubepkg/templates/latest/rpm/kubeadm/10-kubeadm.conf"
 
 rm -fr /tmp/kubernetes
 sleep 1
