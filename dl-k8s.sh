@@ -237,7 +237,8 @@ sleep 1
 
 # jq
 rm -fr /tmp/jq
-wget -q -c "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -O /tmp/jq
+#wget -q -c "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -O /tmp/jq
+wget -q -c "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64" -O /tmp/jq
 chmod 0755 /tmp/jq
 strip /tmp/jq
 install -m 0755 -d usr/share/kubernetes/jq
