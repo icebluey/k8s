@@ -92,8 +92,8 @@ wget -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${
 
 #_dashboard_tag="$(wget -qO- 'https://github.com/kubernetes/dashboard/tags' | grep -i 'href="/kubernetes/dashboard/archive/refs/tags/v[1-9].*\.tar\.gz' | sed 's|"|\n|g' | grep '^/kubernetes/dashboard/archive/refs/tags/.*\.tar\.gz' | sed -e 's|.*tags/||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n 1)"
 #wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/dashboard/${_dashboard_tag}/aio/deploy/recommended.yaml" -O kube-dashboard.yaml
-_dashboard_url="$(wget -qO- 'https://github.com/kubernetes/dashboard/releases' | grep -i 'https://raw.githubusercontent.com/kubernetes/dashboard/v' | sed -e 's| |\n|g' -e 's|"|\n|g' | grep -i '^https://raw.githubusercontent.com/kubernetes/dashboard/v' | sed 's|\.yaml.*|.yaml|g' | grep -ivE 'alpha|beta|rc[0-9]' | sort -V | uniq | tail -n1)"
-wget -c -t 0 -T 9 "${_dashboard_url}" -O kube-dashboard.yaml
+#_dashboard_url="$(wget -qO- 'https://github.com/kubernetes/dashboard/releases' | grep -i 'https://raw.githubusercontent.com/kubernetes/dashboard/v' | sed -e 's| |\n|g' -e 's|"|\n|g' | grep -i '^https://raw.githubusercontent.com/kubernetes/dashboard/v' | sed 's|\.yaml.*|.yaml|g' | grep -ivE 'alpha|beta|rc[0-9]' | sort -V | uniq | tail -n1)"
+#wget -c -t 0 -T 9 "${_dashboard_url}" -O kube-dashboard.yaml
 
 _istio_ver="$(wget -qO- 'https://github.com/istio/istio/releases' | grep -i 'istio.*linux.*\.t' | grep -i 'href="/istio/istio/releases/download/' | sed 's|"|\n|g' | grep -i '^/istio/istio/releases/download/' | sed 's|/istio/istio/releases/download/||g' | sed 's|/.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
 wget -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
@@ -211,7 +211,7 @@ install -v -c -m 0644 kubelet.service /tmp/kubernetes/usr/share/kubernetes/
 install -v -c -m 0755 plugins.tmp/* /tmp/kubernetes/usr/share/kubernetes/cni-plugins/
 
 #install -v -c -m 0644 kube-flannel.yaml /tmp/kubernetes/usr/share/kubernetes/
-install -v -c -m 0644 kube-dashboard.yaml /tmp/kubernetes/usr/share/kubernetes/
+#install -v -c -m 0644 kube-dashboard.yaml /tmp/kubernetes/usr/share/kubernetes/
 install -v -c -m 0644 ingress-nginx.yaml /tmp/kubernetes/usr/share/kubernetes/
 
 install -v -c -m 0755 istioctl /tmp/kubernetes/usr/bin/
@@ -294,25 +294,25 @@ sleep 1
 sleep 2
 ###############################################################################
 
-_images=''
-_images=($(cat usr/share/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+#_images=''
+#_images=($(cat usr/share/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
-_clean_start_docker
-for image in ${_images[@]}; do
-    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
-    sleep 2
-done
-echo
-sleep 2
-docker images -a
-echo
-sleep 2
-docker image save -o usr/share/kubernetes/images/kube-dashboard.tar ${_images[@]}
-sleep 2
-chmod 0644 usr/share/kubernetes/images/kube-dashboard.tar
-sleep 2
-gzip -f -9 usr/share/kubernetes/images/kube-dashboard.tar
-sleep 2
+#_clean_start_docker
+#for image in ${_images[@]}; do
+#    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+#    sleep 2
+#done
+#echo
+#sleep 2
+#docker images -a
+#echo
+#sleep 2
+#docker image save -o usr/share/kubernetes/images/kube-dashboard.tar ${_images[@]}
+#sleep 2
+#chmod 0644 usr/share/kubernetes/images/kube-dashboard.tar
+#sleep 2
+#gzip -f -9 usr/share/kubernetes/images/kube-dashboard.tar
+#sleep 2
 ###############################################################################
 
 #_images=''
