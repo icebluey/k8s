@@ -18,7 +18,11 @@ _install_go() {
     #_go_version="$(wget -qO- 'https://golang.org/dl/' | grep -i 'linux-amd64\.tar\.' | sed 's/"/\n/g' | grep -i 'linux-amd64\.tar\.' | cut -d/ -f3 | grep -i '\.gz$' | sed 's/go//g; s/.linux-amd64.tar.gz//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | grep '^1\.18\.' | tail -n 1)"
     #wget -q -c -t 0 -T 9 "https://dl.google.com/go/go${_go_version}.linux-amd64.tar.gz"
     # Go1.20.X
-    _go_version="$(wget -qO- 'https://golang.org/dl/' | grep -i 'linux-amd64\.tar\.' | sed 's/"/\n/g' | grep -i 'linux-amd64\.tar\.' | cut -d/ -f3 | grep -i '\.gz$' | sed 's/go//g; s/.linux-amd64.tar.gz//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | grep '^1\.20\.' | tail -n 1)"
+    #_go_version="$(wget -qO- 'https://golang.org/dl/' | grep -i 'linux-amd64\.tar\.' | sed 's/"/\n/g' | grep -i 'linux-amd64\.tar\.' | cut -d/ -f3 | grep -i '\.gz$' | sed 's/go//g; s/.linux-amd64.tar.gz//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | grep '^1\.20\.' | tail -n 1)"
+
+    # Go1.21.X
+    _go_version="$(wget -qO- 'https://golang.org/dl/' | grep -i 'linux-amd64\.tar\.' | sed 's/"/\n/g' | grep -i 'linux-amd64\.tar\.' | cut -d/ -f3 | grep -i '\.gz$' | sed 's/go//g; s/.linux-amd64.tar.gz//g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | grep '^1\.21\.' | tail -n 1)"
+
     wget -q -c -t 0 -T 9 "https://dl.google.com/go/go${_go_version}.linux-amd64.tar.gz"
     rm -fr /usr/local/go
     sleep 1
@@ -67,7 +71,7 @@ rm -fr /tmp/flannel
 _tag_ver="$(wget -qO- 'https://github.com/flannel-io/flannel/releases' | grep -i 'href="/flannel-io/flannel/tree/' | sed 's/"/\n/g' | grep -i '^/flannel-io/flannel/tree' | sed -e 's|.*tree/v||g' -e 's|/.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | tail -n 1)"
 wget -q -c -t 0 -T 9 "https://github.com/flannel-io/flannel/archive/refs/tags/v${_tag_ver}.tar.gz"
 sleep 2
-tar -xf "v${_tag_ver}.tar.gz"
+tar -xof "v${_tag_ver}.tar.gz"
 sleep 2
 rm -f *.tar*
 cd flannel-${_tag_ver}
@@ -176,4 +180,3 @@ echo
 echo " package flannel ${_tag_ver} done"
 echo
 exit
-
