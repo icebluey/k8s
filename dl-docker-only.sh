@@ -20,7 +20,10 @@ cd static
 #_filename="$(wget -qO- 'https://download.docker.com/linux/static/stable/x86_64/' | grep '<a href="' | sed -e '/extras/d' | grep 'tgz"' | cut -d'"' -f2 | grep 'tgz$' | grep '20\.10\.' | sort -V | uniq | tail -n 1)"
 
 # 23.0.X
-_filename="$(wget -qO- 'https://download.docker.com/linux/static/stable/x86_64/' | grep '<a href="' | sed -e '/extras/d' | grep 'tgz"' | cut -d'"' -f2 | grep 'tgz$' | grep '23\.0\.' | sort -V | uniq | tail -n 1)"
+#_filename="$(wget -qO- 'https://download.docker.com/linux/static/stable/x86_64/' | grep '<a href="' | sed -e '/extras/d' | grep 'tgz"' | cut -d'"' -f2 | grep 'tgz$' | grep '23\.0\.' | sort -V | uniq | tail -n 1)"
+
+# 26.1.X
+_filename="$(wget -qO- 'https://download.docker.com/linux/static/stable/x86_64/' | grep '<a href="' | sed -e '/extras/d' | grep 'tgz"' | cut -d'"' -f2 | grep 'tgz$' | grep '26\.1\.' | sort -V | uniq | tail -n 1)"
 
 _version="$(echo "${_filename}" | sed 's/\.tgz$//g' | cut -d- -f2)"
 echo "Docker version ${_version}"
