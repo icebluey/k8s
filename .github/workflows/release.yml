@@ -129,11 +129,11 @@ jobs:
           #sudo bash dl-k8s.sh "1.25.6"
           #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
 
-          sudo bash dl-k8s.sh "1.29.4"
+          sudo bash dl-k8s.sh "1.29.5"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
 
-          #sudo bash dl-k8s.sh "1.30.1"
-          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo bash dl-k8s.sh "1.30.1"
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
 
           sudo sleep 2
           sudo chmod 0644 /tmp/.artifacts/*.tar*
