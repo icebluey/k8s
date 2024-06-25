@@ -121,6 +121,12 @@ chmod 0755 flannel-amd64
 sleep 1
 mv -f flannel-amd64 plugins.tmp/flannel
 
+_helm_ver="$(wget -qO- 'https://github.com/helm/helm/releases' | grep -i 'helm/releases/tag/v[1-9]' | sed 's/"/\n/g' | grep -i 'helm/releases/tag/v[1-9]' | sed 's|.*/tag/v||g' | grep -iv -E 'alpha|beta|rc' | sort -V | tail -n 1)"
+wget -c -t 9 -T 9 "https://get.helm.sh/helm-v${_helm_ver}-linux-amd64.tar.gz"
+mkdir helm.tmp
+tar -xof helm-*.tar* -C helm.tmp/
+rm -f helm-*.tar*
+
 #sha256sum -c "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
 echo "$(awk '{print $1}' "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256")  crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz" | sha256sum -c -
 sleep 1
@@ -208,6 +214,7 @@ install -v -c -m 0755 /tmp/.k8s_bin/* /tmp/kubernetes/usr/bin/
 sleep 2
 rm -fr /tmp/.k8s_bin
 
+install -v -c -m 0755 helm.tmp/linux-amd64/helm /tmp/kubernetes/usr/bin/
 install -v -c -m 0755 crictl /tmp/kubernetes/usr/bin/
 install -v -c -m 0644 10-kubeadm.conf /tmp/kubernetes/etc/systemd/system/kubelet.service.d/10-kubeadm.conf.example
 install -v -c -m 0644 kubelet.service /tmp/kubernetes/usr/share/kubernetes/
