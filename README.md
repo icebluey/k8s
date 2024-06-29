@@ -46,22 +46,22 @@ bootstrapTokens:
   - authentication
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: 192.168.10.101
+  advertiseAddress: node_real_ip
   bindPort: 6443
 nodeRegistration:
-  criSocket: /run/containerd/containerd.sock
+  criSocket: unix:///run/containerd/containerd.sock
   imagePullPolicy: IfNotPresent
-  name: "k8s-master1"
+  name: "node_name"
   taints: null
 ---
 apiServer:
   extraArgs: 
-    service-node-port-range: 20000-49999
+    service-node-port-range: 20000-39999
   timeoutForControlPlane: 4m0s
 apiVersion: kubeadm.k8s.io/v1beta3
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
-controlPlaneEndpoint: "192.168.10.101:6443"
+controlPlaneEndpoint: "keepalived_virtual_ipaddress(lb):port"
 controllerManager: {}
 dns: {}
 etcd:
@@ -69,7 +69,7 @@ etcd:
     dataDir: /var/lib/etcd
 imageRepository: registry.k8s.io
 kind: ClusterConfiguration
-kubernetesVersion: 1.26.6
+kubernetesVersion: 1.30.2
 networking:
   dnsDomain: cluster.local
   podSubnet: 172.16.0.0/12
