@@ -106,6 +106,7 @@ tar -xof "containerd-${_containerd_ver}-linux-amd64.tar.gz"
 rm -fr /tmp/containerd
 sleep 2
 install -m 0755 -d /tmp/containerd/usr/bin
+install -m 0755 -d /tmp/containerd/etc/containerd/certs.d
 install -m 0755 -d /tmp/containerd/etc/containerd/ocicrypt/keys
 install -m 0755 -d /tmp/containerd/var/lib/containerd
 
