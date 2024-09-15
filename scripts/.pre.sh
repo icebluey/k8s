@@ -72,7 +72,7 @@ apt install -y daemon procps net-tools
 apt install -y iptables
 apt install -y ebtables
 apt install -y nftables
-apt install -y libseccomp-dev libseccomp2
+apt install -y libseccomp-dev libseccomp2 gperf
 
 apt install -y binutils coreutils util-linux findutils diffutils patch sed gawk grep file tar gzip bzip2 xz-utils
 apt install -y libc-bin passwd pkg-config groff-base
