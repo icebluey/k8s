@@ -5,6 +5,10 @@ umask 022
 ln -svf ../usr/share/zoneinfo/UTC /etc/localtime
 DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata
 dpkg-reconfigure --frontend noninteractive tzdata
+
+# delete snap
+snap remove --purge lxd
+snap remove --purge $(snap list | awk 'NR > 1 && $1 !~ /lxd/ && $1 !~ /snapd/ {print $1}' | sort -V | uniq | paste -sd" ")
 snap remove --purge lxd
 snap remove --purge firefox
 snap remove --purge snap-store
@@ -12,6 +16,43 @@ snap remove --purge core
 snap remove --purge core18
 snap remove --purge core20
 snap remove --purge snapd-desktop-integration
+snap remove --purge lxd
+snap remove --purge snapd
+_services=(
+'snapd.socket'
+'snapd.service'
+'snapd.apparmor.service'
+'snapd.autoimport.service'
+'snapd.core-fixup.service'
+'snapd.failure.service'
+'snapd.recovery-chooser-trigger.service'
+'snapd.seeded.service'
+'snapd.snap-repair.service'
+'snapd.snap-repair.timer'
+'snapd.system-shutdown.service'
+)
+for _service in ${_services[@]}; do
+    systemctl stop ${_service} >/dev/null 2>&1
+done
+sleep 3
+for _service in ${_services[@]}; do
+    systemctl disable ${_service} >/dev/null 2>&1
+done
+systemctl disable snapd.service
+systemctl disable snapd.socket
+systemctl disable snapd.seeded.service
+systemctl stop snapd.service
+systemctl stop snapd.socket
+systemctl stop snapd.seeded.service
+apt autoremove --purge lxd-agent-loader snapd
+/bin/rm -rf ~/snap
+/bin/rm -rf /snap
+/bin/rm -rf /var/snap
+/bin/rm -rf /var/lib/snapd
+/bin/rm -rf /var/cache/snapd
+/bin/rm -fr /tmp/snap*
+/bin/rm -fr /usr/lib/snapd
+
 systemctl stop docker.socket
 systemctl stop podman.socket
 systemctl stop docker.service
@@ -22,13 +63,6 @@ systemctl disable podman.socket
 systemctl disable docker.service
 systemctl disable containerd.service
 systemctl disable podman.service
-systemctl stop snapd.service
-systemctl stop snapd.socket
-systemctl stop snapd.seeded.service
-systemctl disable snapd.service
-systemctl disable snapd.socket
-systemctl disable snapd.seeded.service
-apt autoremove --purge -y snapd
 apt autoremove --purge -y firefox
 apt autoremove --purge -y moby-engine
 apt autoremove --purge -y moby-cli
@@ -38,12 +72,6 @@ apt autoremove --purge -y moby-containerd
 apt autoremove --purge -y moby-runc
 apt autoremove --purge -y podman
 apt autoremove --purge -y crun
-rm -fr ~/snap
-rm -fr /snap
-rm -fr /var/snap
-rm -fr /var/lib/snapd
-rm -fr /var/cache/snapd
-rm -fr /tmp/snap*
 rm -fr /etc/apt/preferences.d/firefox*
 systemctl stop systemd-resolved.service
 systemctl stop systemd-timesyncd
