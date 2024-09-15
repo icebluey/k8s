@@ -19,31 +19,9 @@ jobs:
       - name: Package Docker and K8s
         run: |
           sudo apt update -y -qqq
-          sudo apt autoremove --purge -y dotnet-apphost-pack-6.0 || true 
-          sudo apt autoremove --purge -y dotnet-apphost-pack-7.0 || true 
-          sudo apt autoremove --purge -y dotnet-host || true 
-          sudo apt autoremove --purge -y dotnet-hostfxr-6.0 || true 
-          sudo apt autoremove --purge -y dotnet-hostfxr-7.0 || true 
-          sudo apt autoremove --purge -y dotnet-runtime-6.0 || true 
-          sudo apt autoremove --purge -y dotnet-runtime-7.0 || true 
-          sudo apt autoremove --purge -y dotnet-runtime-deps-6.0 || true 
-          sudo apt autoremove --purge -y dotnet-runtime-deps-7.0 || true 
-          sudo apt autoremove --purge -y dotnet-sdk-6.0 || true 
-          sudo apt autoremove --purge -y dotnet-sdk-7.0 || true 
-          sudo apt autoremove --purge -y dotnet-targeting-pack-6.0 || true 
-          sudo apt autoremove --purge -y dotnet-targeting-pack-7.0 || true 
+          sudo apt autoremove --purge -y --allow-remove-essential $(dpkg -l | grep -i -E 'dotnet|microsoft|libmono|mono-|monodoc|powershell' | awk '{print $2}' | sort -V | uniq | paste -sd" ") || true 
           sudo apt autoremove --purge -y google-chrome-stable || true 
           sudo apt autoremove --purge -y google-cloud-sdk || true 
-          sudo apt autoremove --purge -y libmono-microsoft-build4.0-cil || true 
-          sudo apt autoremove --purge -y libmono-microsoft-build-engine4.0-cil || true 
-          sudo apt autoremove --purge -y libmono-microsoft-build-framework4.0-cil || true 
-          sudo apt autoremove --purge -y libmono-microsoft-build-tasks-v4.0-4.0-cil || true 
-          sudo apt autoremove --purge -y libmono-microsoft-build-utilities-v4.0-4.0-cil || true 
-          sudo apt autoremove --purge -y libmono-microsoft-csharp4.0-cil || true 
-          sudo apt autoremove --purge -y libmono-microsoft-visualc10.0-cil || true 
-          sudo apt autoremove --purge -y libmono-microsoft-web-infrastructure1.0-cil || true 
-          sudo apt autoremove --purge -y libmono-sqlite4.0-cil || true 
-          sudo apt autoremove --purge -y libmono-system-json-microsoft4.0-cil || true 
           sudo apt autoremove --purge -y libmspack0 || true 
           sudo apt autoremove --purge -y libpq5 || true 
           sudo apt autoremove --purge -y libpq-dev || true 
@@ -76,6 +54,7 @@ jobs:
           sudo apt autoremove --purge -y python3-configobj || true 
           sudo apt autoremove --purge -y shim-signed || true 
           sudo apt autoremove --purge -y firefox || true 
+          sudo /bin/rm -fr /var/lib/postgresql /var/lib/mysql
           sudo /bin/rm -fr /usr/share/sbt
           sudo /bin/rm -fr /usr/share/gradle*
           sudo /bin/rm -fr /usr/share/miniconda*
