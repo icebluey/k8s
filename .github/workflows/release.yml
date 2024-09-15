@@ -70,17 +70,23 @@ jobs:
           sudo bash scripts/.pre.sh
           sudo apt upgrade -y -qqq
           sudo bash scripts/install_docker.sh
+
           sudo rm -fr /tmp/.artifacts
           sudo rm -fr /tmp/*
           sudo mkdir /tmp/.artifacts
-          sudo bash dl-docker.sh
-          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+
+          #sudo bash dl-docker.sh
+          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          
+          #sudo bash dl-docker-only.sh
+          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+
           sudo bash dl-containerd.sh
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-          sudo bash dl-docker-only.sh
-          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+
           sudo bash dl-etcd.sh
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          
           sudo bash dl-flanneld.sh
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           
