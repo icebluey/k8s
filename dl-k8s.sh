@@ -455,6 +455,11 @@ sed '/ timeoutForControlPlane: /i \  extraArgs: \n\    service-node-port-range: 
 sed '/^controllerManager:/icontrolPlaneEndpoint: "lb_ip:port"' -i usr/share/kubernetes/example-kubeadm-config.yaml
 sed 's| advertiseAddress: .*| advertiseAddress: node_ip|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
 sed 's|  name: node|  name: "node_name"|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
+
+sed 's|caCertificateValidityPeriod:.*|caCertificateValidityPeriod: 876000h0m0s|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed 's|certificateValidityPeriod:.*|certificateValidityPeriod: 876000h0m0s|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
+sed 's|encryptionAlgorithm:.*|encryptionAlgorithm: RSA-4096|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
+
 echo '---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
