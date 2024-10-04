@@ -45,35 +45,59 @@ _clean_docker
 
 set -e
 
-if [[ -n "${1}" ]]; then
-    rm -fr /tmp/kubeadm.bin
-    wget -q -c -t 0 -T 9 -O /tmp/kubeadm.bin "https://dl.k8s.io/release/v${1}/bin/linux/amd64/kubeadm"
-    sleep 1
-    chmod 0755 /tmp/kubeadm.bin
-    _k8s_ver="$(/tmp/kubeadm.bin config images list 2>/dev/null | grep -i 'kube-apiserver:' | awk -F : '{print $NF}' | sed 's/[Vv]//g')"
-    sleep 1
-    rm -fr /tmp/kubeadm.bin
-else
-    _k8s_ver="$(wget -qO- "https://dl.k8s.io/release/stable.txt" | sed 's|^[Vv]||g')"
-fi
-_clean_start_docker
-docker run --cpus="2.0" --hostname 'x86-040.build.eng.bos.redhat.com' --rm --name al8 -itd icebluey/almalinux:8 bash
-chmod 0755 build-k8s-bin.sh
-docker exec al8 yum clean all
-docker exec al8 yum makecache
-docker exec al8 /bin/bash -c 'rm -fr /tmp/*'
-docker cp build-k8s-bin.sh al8:/home/
-docker exec al8 /bin/bash /home/build-k8s-bin.sh "${_k8s_ver}"
+###############################################################################
+#
+# Build my own binaries
+#
+#if [[ -n "${1}" ]]; then
+#    rm -fr /tmp/kubeadm.bin
+#    wget -q -c -t 0 -T 9 -O /tmp/kubeadm.bin "https://dl.k8s.io/release/v${1}/bin/linux/amd64/kubeadm"
+#    sleep 1
+#    chmod 0755 /tmp/kubeadm.bin
+#    _k8s_ver="$(/tmp/kubeadm.bin config images list 2>/dev/null | grep -i 'kube-apiserver:' | awk -F : '{print $NF}' | sed 's/[Vv]//g')"
+#    sleep 1
+#    rm -fr /tmp/kubeadm.bin
+#else
+#    _k8s_ver="$(wget -qO- "https://dl.k8s.io/release/stable.txt" | sed 's|^[Vv]||g')"
+#fi
+#_clean_start_docker
+#docker run --cpus="2.0" --hostname 'x86-040.build.eng.bos.redhat.com' --rm --name al8 -itd icebluey/almalinux:8 bash
+#chmod 0755 build-k8s-bin.sh
+#docker exec al8 yum clean all
+#docker exec al8 yum makecache
+#docker exec al8 /bin/bash -c 'rm -fr /tmp/*'
+#docker cp build-k8s-bin.sh al8:/home/
+#docker exec al8 /bin/bash /home/build-k8s-bin.sh "${_k8s_ver}"
+#rm -fr /tmp/.k8s_bin
+#docker cp al8:/tmp/.k8s_bin /tmp/
+#sleep 10
+#ls -la /tmp/.k8s_bin/
+#_clean_docker
+###############################################################################
+
+_arch="amd64"
+
 rm -fr /tmp/.k8s_bin
-docker cp al8:/tmp/.k8s_bin /tmp/
-sleep 10
-ls -la /tmp/.k8s_bin/
-_clean_docker
+mkdir /tmp/.k8s_bin
+cd /tmp/.k8s_bin
+
+_files=(
+"kubeadm"
+"kubectl"
+"kubelet"
+"kube-proxy"
+"kubectl-convert"
+)
+for file in ${_files[@]}; do
+    wget -c -t 0 -T 9 "https://dl.k8s.io/release/v${1}/bin/linux/${_arch}/${file}"
+done
+sleep 1
+chmod 0755 k*
+
+###############################################################################
 
 _tmp_dir="$(mktemp -d)"
 cd "${_tmp_dir}"
-
-_arch="amd64"
 
 _cni_plugins_ver="$(wget -qO- 'https://github.com/containernetworking/plugins/releases' | grep -i "cni-plugins-linux.*\.t" | grep -i 'href="/containernetworking/plugins/releases/download/' | sed 's|"|\n|g' | grep -i '^/containernetworking/plugins/releases/download/' | sed -e 's|.*/v||g' -e 's|/c.*||g' | sort -V | uniq | tail -n 1)"
 wget -c -t 0 -T 9 "https://github.com/containernetworking/plugins/releases/download/v${_cni_plugins_ver}/cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
