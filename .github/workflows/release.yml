@@ -19,57 +19,12 @@ jobs:
       - name: Package Docker and K8s
         run: |
           sudo apt update -y -qqq
-          sudo systemctl disable postgresql.service || true 
-          sudo systemctl disable mysql.service || true 
-          sudo systemctl disable mysqld.service || true 
-          sudo systemctl stop postgresql.service || true 
-          sudo systemctl stop mysql.service || true 
-          sudo systemctl stop mysqld.service || true 
-          sudo apt autoremove --purge -y --allow-remove-essential $(dpkg -l | grep -i -E 'dotnet|microsoft|libmono|mono-|monodoc|powershell' | awk '{print $2}' | sort -V | uniq | paste -sd" ") || true 
-          sudo apt autoremove --purge -y --allow-remove-essential $(dpkg -l | grep -i -E 'firefox|firebird|google-chrome-stable' | awk '{print $2}' | sort -V | uniq | paste -sd" ") || true 
-          sudo apt autoremove --purge -y --allow-remove-essential $(dpkg -l | awk '$2 ~ /mysql|postgresql|google-cloud|mssql|msbuild|msodbcsql|^llvm-|^php[1-9]/ {print $2}' |  grep -iv libmysqlclient | sort -V | uniq | paste -sd" ") || true 
-          sudo apt autoremove --purge -y libmspack0 || true 
-          sudo apt autoremove --purge -y libpq5 || true 
-          sudo apt autoremove --purge -y libpq-dev || true 
-          sudo apt autoremove --purge -y libsybdb5 || true 
-          sudo apt autoremove --purge -y libz3-4 || true 
-          sudo apt autoremove --purge -y libz3-dev || true 
-          sudo apt autoremove --purge -y nginx || true 
-          sudo apt autoremove --purge -y nginx-common || true 
-          sudo apt autoremove --purge -y packages-microsoft-prod || true 
-          sudo apt autoremove --purge -y powermgmt-base || true 
-          sudo apt autoremove --purge -y python3-configobj || true 
-          sudo apt autoremove --purge -y shim-signed || true 
-          sudo /bin/rm -fr /var/lib/postgresql /var/lib/mysql
-          sudo /bin/rm -fr /usr/share/sbt
-          sudo /bin/rm -fr /usr/share/gradle*
-          sudo /bin/rm -fr /usr/share/miniconda*
-          sudo /bin/rm -fr /usr/share/az_*
-          sudo /bin/rm -fr /usr/share/swift*
-          sudo /bin/rm -fr /usr/share/dotnet*
-          sudo /bin/rm -fr /usr/lib/firefox
-          sudo /bin/rm -fr /usr/lib/llvm*
-          sudo /bin/rm -fr /usr/lib/mono
-          sudo /bin/rm -fr /usr/lib/jvm
-          sudo /bin/rm -fr /usr/lib/google-cloud-sdk*
-          sudo /bin/rm -fr /opt/containerd
-          sudo /bin/rm -fr /opt/mssql-tools
-          sudo /bin/rm -fr /opt/google
-          sudo /bin/rm -fr /opt/pipx
-          sudo /bin/rm -fr /opt/az
-          sudo /bin/rm -fr /opt/microsoft
-          sudo /bin/rm -fr /usr/local/sqlpackage
-          sudo /bin/rm -fr /usr/local/n
-          sudo /bin/rm -fr /usr/local/aws*
-          sudo /bin/rm -fr /usr/local/julia*
-          sudo /bin/rm -fr /usr/local/share
-          sudo /bin/rm -fr /usr/local/.ghcup
-          sudo /bin/rm -fr /opt/hostedtoolcache
-          sudo apt install -y -qqq bash wget ca-certificates curl git
+          sudo apt autoremove --purge -y needrestart || true
+          sudo apt install -y bash wget
           sudo ln -svf bash /bin/sh
-          sudo bash scripts/.pre.sh
+          sudo bash scripts/clean-os.sh
           sudo apt upgrade -y -qqq
-          sudo bash scripts/install_docker.sh
+          sudo bash scripts/install-docker.sh
 
           sudo rm -fr /tmp/.artifacts
           sudo rm -fr /tmp/*
