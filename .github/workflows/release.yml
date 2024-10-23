@@ -26,49 +26,42 @@ jobs:
           sudo apt upgrade -y -qqq
           sudo bash scripts/install-docker.sh
 
-      - name: Package K8s
+      - name: Generate release tag env
+        run: |
+          echo "_dateutc=$(date -u +%Y-%m-%d)" >> $GITHUB_ENV
+
+      - name: Package K8s 1.30
+        run: |
+          #sudo bash dl-etcd.sh
+          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          #sudo bash dl-flanneld.sh
+          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo /bin/rm -fr /tmp/.artifacts
+          sudo /bin/rm -fr /tmp/*
+          sudo mkdir /tmp/.artifacts
+          sudo bash dl-k8s.sh "1.30.6"
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo chmod 0644 /tmp/.artifacts/*.tar*
+      - name: Upload files
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env._dateutc }}
+          files: /tmp/.artifacts/*.tar*
+
+      - name: Package K8s 1.31
         run: |
           sudo /bin/rm -fr /tmp/.artifacts
           sudo /bin/rm -fr /tmp/*
           sudo mkdir /tmp/.artifacts
-
-          sudo bash dl-etcd.sh
-          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-          
-          sudo bash dl-flanneld.sh
-          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-          
-          #sudo bash dl-k8s.sh "1.23.10"
-          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-          
-          #sudo bash dl-k8s.sh "1.24.4"
-          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-          
-          #sudo bash dl-k8s.sh "1.25.6"
-          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-
-          #sudo bash dl-k8s.sh "1.29.6"
-          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-
-          sudo bash dl-k8s.sh "1.30.6"
-          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-
           sudo bash dl-k8s.sh "1.31.2"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-
-          sudo sleep 2
           sudo chmod 0644 /tmp/.artifacts/*.tar*
-          exit
+      - name: Upload files
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env._dateutc }}
+          files: /tmp/.artifacts/*.tar*
 
-      - name: Update files
+      - name: Delete old release tag env
         run: |
-          _dateutc=$(date -u +%Y-%m-%d)
-          _repo="$(echo ${{ github.repository }} | awk -F '/' '{print $2}')"
-          ls -1 /tmp/.artifacts/*.tar.xz 2>/dev/null | xargs -I "{}" sudo bash scripts/.upload_file_to_github-release.sh --token ${{ secrets.GITHUB_TOKEN }} --user "${{ github.repository_owner }}" --repo "${_repo}" --file "{}" --tag "v${_dateutc}"
-          ls -1 /tmp/.artifacts/*.tar.xz.sha256 2>/dev/null | xargs -I "{}" sudo bash scripts/.upload_file_to_github-release.sh --token ${{ secrets.GITHUB_TOKEN }} --user "${{ github.repository_owner }}" --repo "${_repo}" --file "{}" --tag "v${_dateutc}"
-          sudo sleep 2
-          cd /tmp
-          sudo rm -fr /tmp/.artifacts
-          sudo rm -fr /tmp/*
-          exit
-
+          sed -e "/^_dateutc=/d" -i $GITHUB_ENV
