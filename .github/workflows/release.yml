@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Package Docker and K8s
+      - name: Install docker
         run: |
           sudo apt update -y -qqq
           sudo apt autoremove --purge -y needrestart || true
@@ -26,18 +26,11 @@ jobs:
           sudo apt upgrade -y -qqq
           sudo bash scripts/install-docker.sh
 
-          sudo rm -fr /tmp/.artifacts
-          sudo rm -fr /tmp/*
+      - name: Package K8s
+        run: |
+          sudo /bin/rm -fr /tmp/.artifacts
+          sudo /bin/rm -fr /tmp/*
           sudo mkdir /tmp/.artifacts
-
-          #sudo bash dl-docker.sh
-          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-          
-          #sudo bash dl-docker-only.sh
-          #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-
-          sudo bash dl-containerd.sh
-          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
 
           sudo bash dl-etcd.sh
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
@@ -57,10 +50,10 @@ jobs:
           #sudo bash dl-k8s.sh "1.29.6"
           #sudo mv -f /tmp/*.tar* /tmp/.artifacts/
 
-          sudo bash dl-k8s.sh "1.30.5"
+          sudo bash dl-k8s.sh "1.30.6"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
 
-          sudo bash dl-k8s.sh "1.31.1"
+          sudo bash dl-k8s.sh "1.31.2"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
 
           sudo sleep 2
