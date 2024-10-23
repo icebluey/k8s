@@ -17,14 +17,13 @@ _clean_start_docker() {
     sleep 1
     systemctl stop containerd.service > /dev/null 2>&1 || : 
     sleep 1
+    /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
     ip link set docker0 down > /dev/null 2>&1 || : 
-    sleep 1
     ip link delete docker0 > /dev/null 2>&1 || : 
-    rm -fr /var/lib/docker/*
     systemctl start containerd.service
-    sleep 2
+    sleep 1
     systemctl start docker.service
-    sleep 2
+    sleep 1
 }
 
 _clean_docker() {
@@ -36,9 +35,8 @@ _clean_docker() {
     systemctl stop containerd.service > /dev/null 2>&1 || : 
     sleep 1
     ip link set docker0 down > /dev/null 2>&1 || : 
-    sleep 1
     ip link delete docker0 > /dev/null 2>&1 || : 
-    rm -fr /var/lib/docker/*
+    /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
     sleep 1
 }
 _clean_docker
