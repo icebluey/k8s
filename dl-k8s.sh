@@ -43,21 +43,22 @@ _clean_docker
 
 set -e
 
+if [[ -n "${1}" ]]; then
+    rm -fr /tmp/kubeadm.bin
+    wget -q -c -t 0 -T 9 -O /tmp/kubeadm.bin "https://dl.k8s.io/release/v${1}/bin/linux/amd64/kubeadm"
+    sleep 1
+    chmod 0755 /tmp/kubeadm.bin
+    _k8s_ver="$(/tmp/kubeadm.bin config images list 2>/dev/null | grep -i 'kube-apiserver:' | awk -F : '{print $NF}' | sed 's/[Vv]//g')"
+    sleep 1
+    rm -fr /tmp/kubeadm.bin
+else
+    _k8s_ver="$(wget -qO- "https://dl.k8s.io/release/stable.txt" | sed 's|^[Vv]||g')"
+fi
+
 ###############################################################################
 #
 # Build my own binaries
 #
-#if [[ -n "${1}" ]]; then
-#    rm -fr /tmp/kubeadm.bin
-#    wget -q -c -t 0 -T 9 -O /tmp/kubeadm.bin "https://dl.k8s.io/release/v${1}/bin/linux/amd64/kubeadm"
-#    sleep 1
-#    chmod 0755 /tmp/kubeadm.bin
-#    _k8s_ver="$(/tmp/kubeadm.bin config images list 2>/dev/null | grep -i 'kube-apiserver:' | awk -F : '{print $NF}' | sed 's/[Vv]//g')"
-#    sleep 1
-#    rm -fr /tmp/kubeadm.bin
-#else
-#    _k8s_ver="$(wget -qO- "https://dl.k8s.io/release/stable.txt" | sed 's|^[Vv]||g')"
-#fi
 #_clean_start_docker
 #docker run --cpus="2.0" --hostname 'x86-040.build.eng.bos.redhat.com' --rm --name al8 -itd icebluey/almalinux:8 bash
 #chmod 0755 build-k8s-bin.sh
