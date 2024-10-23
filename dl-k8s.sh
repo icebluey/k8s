@@ -287,7 +287,8 @@ rm -f /tmp/jq
 sed '/^After=/s|[ \t]*docker.service||g' -i usr/share/kubernetes/kubelet.service
 sed '/^After=/s|docker.service||g' -i usr/share/kubernetes/kubelet.service
 sed -e '/^After=$/d' -i usr/share/kubernetes/kubelet.service
-sed '/^After=/aAfter=containerd.service docker.service' -i usr/share/kubernetes/kubelet.service
+#sed '/^After=/aAfter=containerd.service docker.service' -i usr/share/kubernetes/kubelet.service
+sed '/^After=/aAfter=containerd.service' -i usr/share/kubernetes/kubelet.service
 
 find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
 find usr/share/kubernetes/cni-plugins/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs -I '{}' strip '{}'
