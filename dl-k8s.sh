@@ -49,12 +49,13 @@ if [[ -n "${1}" ]]; then
     sleep 1
     chmod 0755 /tmp/kubeadm.bin
     _k8s_ver="$(/tmp/kubeadm.bin config images list 2>/dev/null | grep -i 'kube-apiserver:' | awk -F : '{print $NF}' | sed 's/[Vv]//g')"
-    sleep 1
-    rm -fr /tmp/kubeadm.bin
+    /bin/rm -fr /tmp/kubeadm.bin
 else
     _k8s_ver="$(wget -qO- "https://dl.k8s.io/release/stable.txt" | sed 's|^[Vv]||g')"
 fi
-
+echo
+echo 'k8s version: '"${_k8s_ver}"
+echo
 ###############################################################################
 #
 # Build my own binaries
@@ -80,18 +81,35 @@ rm -fr /tmp/.k8s_bin
 mkdir /tmp/.k8s_bin
 cd /tmp/.k8s_bin
 
+#_files=(
+#"kubeadm"
+#"kubectl"
+#"kubelet"
+#"kube-proxy"
+#"kubectl-convert"
+#)
+#for file in ${_files[@]}; do
+#    wget -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}"
+#done
+#sleep 1
+#chmod 0755 k*
+
 _files=(
-"kubeadm"
-"kubectl"
-"kubelet"
-"kube-proxy"
-"kubectl-convert"
+'kubeadm'
+'kubectl'
+'kubelet'
+'kube-proxy'
+'kubectl-convert'
 )
 for file in ${_files[@]}; do
-    wget -c -t 0 -T 9 "https://dl.k8s.io/release/v${1}/bin/linux/${_arch}/${file}"
+    wget -q -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}"
+    wget -q -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}.sha256"
+    echo "$(<${file}.sha256)  ${file}" | sha256sum --check
+    chmod 0755 "${file}"
 done
+/bin/ls -lah
 sleep 1
-chmod 0755 k*
+rm -f kube*.sha256
 
 ###############################################################################
 
@@ -197,20 +215,7 @@ sleep 1
 ls -1 "calico-${_calico_ver}"/images/*.tar | xargs -I '{}' gzip -f -9 '{}'
 find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | grep -iv '/calico-bpf' | xargs --no-run-if-empty -I '{}' strip '{}'
 
-#_files=(
-#'kubeadm'
-#'kubectl'
-#'kubelet'
-#'kube-proxy'
-#'kubectl-convert'
-#)
-#for file in ${_files[@]}; do
-#    wget -q -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}.sha256"
-#    wget -q -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}"
-#    echo "$(<${file}.sha256)  ${file}" | sha256sum --check
-#done
-#sleep 1
-#rm -f kube*.sha256
+
 
 #_release_ver="$(wget -qO- 'https://github.com/kubernetes/release/tags' | grep -i 'href="/kubernetes/release/releases/tag/' | sed 's|"|\n|g' | grep -i '^/kubernetes/release/releases/tag' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
 #wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
