@@ -125,3 +125,36 @@ for host in ${CONTROL_PLANE_IPS}; do
     scp /etc/kubernetes/pki/etcd/ca.key "${USER}"@$host:/etc/kubernetes/pki/etcd/ca.key
 done
 ```
+
+#### kubeadm 1.31 开始采用 v1beta4 版本的配置文件格式
+```
+
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: JoinConfiguration
+
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ResetConfiguration
+
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: UpgradeConfiguration
+
+# ClusterConfiguration 支持设置证书有效期和key的加密算法
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+caCertificateValidityPeriod: 876000h0m0s
+certificateValidityPeriod: 876000h0m0s
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+
+
+8760h : 365 days * 24 hours = 1 year
+
+```
+
+
