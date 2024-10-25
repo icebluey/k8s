@@ -641,4 +641,5 @@ echo
 echo " package k8s ${_k8s_ver} done"
 echo
 _clean_docker
+sha256sum *.tar.{gz,bz2,xz}
 exit
