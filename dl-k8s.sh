@@ -534,11 +534,10 @@ install -m 0755 cni-plugins/* /opt/cni/bin/
 
 echo '
 cd "$(dirname "$0")"
-cd images
-systemctl daemon-reload > /dev/null 2>&1 || : 
+/bin/systemctl daemon-reload >/dev/null 2>&1 || : 
 sleep 1
-systemctl start containerd.service > /dev/null 2>&1 || : 
-sleep 10
+/bin/systemctl start containerd.service >/dev/null 2>&1 || : 
+sleep 2
 if ! ctr namespaces list | sed "1d" | grep -q -i "k8s\.io"; then ctr namespaces create "k8s.io"; fi
 sleep 1
 /bin/ls -1 *.tar.gz 2>/dev/null | xargs --no-run-if-empty -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
@@ -549,9 +548,9 @@ ctr --namespace "k8s.io" images ls -q | grep -iv "^sha256:"
 echo
 sleep 1
 crictl -r unix:///run/containerd/containerd.sock images
-' > usr/share/kubernetes/load-all-images.sh
+' > usr/share/kubernetes/load-images.sh
 sleep 1
-chmod 0755 usr/share/kubernetes/load-all-images.sh
+chmod 0755 usr/share/kubernetes/load-images.sh
 
 echo '## Install the dependencies
 #### RHEL 8/9
