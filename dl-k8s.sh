@@ -196,11 +196,17 @@ _calico_release_dir=''
 ls -1 "calico-${_calico_ver}"/images/*.tar | xargs -I '{}' gzip -f -9 '{}'
 find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | grep -iv '/calico-bpf' | xargs --no-run-if-empty -I '{}' strip '{}'
 sleep 1
-mv -f "calico-${_calico_ver}"/images "calico-${_calico_ver}"-images
-sleep 1
-tar -zcvf /tmp/"calico-${_calico_ver}"-images.tar.gz "calico-${_calico_ver}"-images
-sleep 2
-rm -fr "calico-${_calico_ver}"-images
+
+if [ -f /.calico.images.done.txt ]; then
+    rm -fr "calico-${_calico_ver}"/images
+else
+    mv -f "calico-${_calico_ver}"/images "calico-${_calico_ver}"-images
+    sleep 1
+    tar -zcvf /tmp/"calico-${_calico_ver}"-images.tar.gz "calico-${_calico_ver}"-images
+    sleep 2
+    rm -fr "calico-${_calico_ver}"-images
+    echo 1 > /.calico.images.done.txt
+fi
 
 #_release_ver="$(wget -qO- 'https://github.com/kubernetes/release/tags' | grep -i 'href="/kubernetes/release/releases/tag/' | sed 's|"|\n|g' | grep -i '^/kubernetes/release/releases/tag' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
 #wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
@@ -415,21 +421,24 @@ sleep 2
 /bin/rm -fr k8s-"${_k8s_ver}"-images
 ###############################################################################
 
-_images=''
-_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-frr.yaml usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-native.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
-_clean_start_docker
-for image in ${_images[@]}; do
-    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+if [ ! -f /.metallb.images.done.txt ]; then
+    _images=''
+    _images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-frr.yaml usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-native.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+    _clean_start_docker
+    for image in ${_images[@]}; do
+        docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+        sleep 2
+    done
+    echo
     sleep 2
-done
-echo
-sleep 2
-docker image save -o /tmp/"metallb-${_metallb_ver}"-images.tar ${_images[@]}
-sleep 2
-chmod 0644 /tmp/"metallb-${_metallb_ver}"-images.tar
-sleep 2
-gzip -f -9 /tmp/"metallb-${_metallb_ver}"-images.tar
+    docker image save -o /tmp/"metallb-${_metallb_ver}"-images.tar ${_images[@]}
+    sleep 2
+    chmod 0644 /tmp/"metallb-${_metallb_ver}"-images.tar
+    sleep 2
+    gzip -f -9 /tmp/"metallb-${_metallb_ver}"-images.tar
+    echo 1 > /.metallb.images.done.txt
+fi
 ###############################################################################
 
 #_images=''
@@ -447,6 +456,7 @@ gzip -f -9 /tmp/"metallb-${_metallb_ver}"-images.tar
 #gzip -f -9 /tmp/"istio-${_istio_ver}".tar
 ###############################################################################
 
+_images=''
 _clean_docker
 
 echo 'runtime-endpoint: "unix:///run/containerd/containerd.sock"' > etc/crictl.yaml
