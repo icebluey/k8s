@@ -5,9 +5,9 @@ umask 022
 
 cd "$(dirname "$0")"
 
-#https://dl.k8s.io/release/v1.27.4/bin/linux/amd64/kubeadm
-#https://dl.k8s.io/release/v1.27.4/bin/linux/amd64/kubelet
-#https://dl.k8s.io/release/v1.27.4/bin/linux/amd64/kubectl
+#https://dl.k8s.io/release/v1.31.1/bin/linux/amd64/kubeadm
+#https://dl.k8s.io/release/v1.31.1/bin/linux/amd64/kubelet
+#https://dl.k8s.io/release/v1.31.1/bin/linux/amd64/kubectl
 
 _clean_start_docker() {
     systemctl daemon-reload > /dev/null 2>&1 || : 
@@ -34,10 +34,9 @@ _clean_docker() {
     sleep 1
     systemctl stop containerd.service > /dev/null 2>&1 || : 
     sleep 1
+    /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
     ip link set docker0 down > /dev/null 2>&1 || : 
     ip link delete docker0 > /dev/null 2>&1 || : 
-    /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
-    sleep 1
 }
 _clean_docker
 
@@ -81,19 +80,6 @@ rm -fr /tmp/.k8s_bin
 mkdir /tmp/.k8s_bin
 cd /tmp/.k8s_bin
 
-#_files=(
-#"kubeadm"
-#"kubectl"
-#"kubelet"
-#"kube-proxy"
-#"kubectl-convert"
-#)
-#for file in ${_files[@]}; do
-#    wget -c -t 0 -T 9 "https://dl.k8s.io/release/v${_k8s_ver}/bin/linux/${_arch}/${file}"
-#done
-#sleep 1
-#chmod 0755 k*
-
 _files=(
 'kubeadm'
 'kubectl'
@@ -107,9 +93,9 @@ for file in ${_files[@]}; do
     echo "$(<${file}.sha256)  ${file}" | sha256sum --check
     chmod 0755 "${file}"
 done
-/bin/ls -lah
 sleep 1
 rm -f kube*.sha256
+/bin/ls -lah
 
 ###############################################################################
 
@@ -267,20 +253,19 @@ if [[ -f "calico-${_calico_ver}"/bin/calico-bpf ]]; then
 fi
 cp -pfr "calico-${_calico_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
-cd /tmp/kubernetes
-sleep 1
-
 # jq
 rm -fr /tmp/jq
-#wget -q -c "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -O /tmp/jq
 wget -q -c "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64" -O /tmp/jq
 chmod 0755 /tmp/jq
 strip /tmp/jq
-install -m 0755 -d usr/share/kubernetes/jq
+install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/jq
 sleep 1
-install -m 0755 /tmp/jq usr/share/kubernetes/jq/jq
-sleep 1
-rm -f /tmp/jq
+mv -f /tmp/jq /tmp/kubernetes/usr/share/kubernetes/jq/jq
+
+
+###############################################################
+
+cd /tmp/kubernetes
 
 #echo '
 #kubectl create secret generic memberlist -n metallb-system --from-literal=secretkey="$(openssl rand -base64 256)"
@@ -308,11 +293,10 @@ fi
 
 # save images
 
-rm -fr usr/share/kubernetes/images/kubeadm
-install -m 0755 -d usr/share/kubernetes/images/kubeadm
 _images=''
 _images=($(./usr/bin/kubeadm config images list 2>/dev/null))
 ###############################################################################
+install -m 0755 -d .k8s.images.tmp
 for image in ${_images[@]}; do
     sleep 1
     _clean_start_docker
@@ -323,15 +307,19 @@ for image in ${_images[@]}; do
     sleep 2
     docker images -a
     sleep 2
-    docker image save -o usr/share/kubernetes/images/kubeadm/"${_name}_${_ver}.tar" "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+    docker image save -o .k8s.images.tmp/"${_name}_${_ver}.tar" "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
     sleep 2
     _name=''
     _ver=''
 done
-chmod 0644 usr/share/kubernetes/images/kubeadm/*.tar
+chmod 0644 .k8s.images.tmp/*.tar
 sleep 1
-/bin/ls -1 usr/share/kubernetes/images/kubeadm/*.tar | xargs --no-run-if-empty -I '{}' gzip -f -9 '{}'
+/bin/ls -1 .k8s.images.tmp/*.tar | xargs --no-run-if-empty -I '{}' gzip -f -9 '{}'
 sleep 2
+mv -f .k8s.images.tmp kubernetes-"${_k8s_ver}"-images
+sleep 1
+tar -zcvf /tmp/kubernetes-"${_k8s_ver}"-images.tar.gz kubernetes-"${_k8s_ver}"-images
+
 ###############################################################################
 
 #_images=''
@@ -397,7 +385,7 @@ sleep 2
 #sleep 2
 ###############################################################################
 
-_images=''
+#_images=''
 ###############################################################################
 #_clean_start_docker
 #_traefik_ver="$(wget -qO- 'https://github.com/traefik/traefik/releases' | grep -i 'href="/traefik/traefik/releases/download/' | sed 's|"|\n|g' | grep -i '^/traefik/traefik/releases/download/' | sed -e 's|.*/v||g' -e 's|/traefik.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
