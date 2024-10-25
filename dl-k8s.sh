@@ -189,13 +189,18 @@ chmod 0644 "calico-${_calico_ver}"/images/*tar*
 rm -f "calico-${_calico_ver}"/bin/*darwin*
 rm -f "calico-${_calico_ver}"/bin/*windows*
 rm -f "calico-${_calico_ver}"/bin/*.exe
-rm -f "calico-${_calico_ver}"/bin/calicoctl/calicoctl-linux-{arm64,armv7,ppc64,s390x,darwin,windows}*
-rm -fr "calico-${_calico_ver}"/bin/cni/{arm64,armv7,ppc64,s390x,darwin,windows}*
+rm -f "calico-${_calico_ver}"/bin/calicoctl/calicoctl-*{arm64,armv7,ppc64,s390x,darwin,windows}*
+rm -fr "calico-${_calico_ver}"/bin/cni/*{arm64,armv7,ppc64,s390x,darwin,windows}*
 rm -fr /tmp/.calico.extr.tmp
 _calico_release_dir=''
-sleep 1
 ls -1 "calico-${_calico_ver}"/images/*.tar | xargs -I '{}' gzip -f -9 '{}'
 find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | grep -iv '/calico-bpf' | xargs --no-run-if-empty -I '{}' strip '{}'
+sleep 1
+mv -f "calico-${_calico_ver}"/images "calico-${_calico_ver}"-images
+sleep 1
+tar -zcvf /tmp/"calico-${_calico_ver}"-images.tar.gz "calico-${_calico_ver}"-images
+sleep 2
+rm -fr "calico-${_calico_ver}"-images
 
 #_release_ver="$(wget -qO- 'https://github.com/kubernetes/release/tags' | grep -i 'href="/kubernetes/release/releases/tag/' | sed 's|"|\n|g' | grep -i '^/kubernetes/release/releases/tag' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
 #wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
@@ -403,11 +408,11 @@ chmod 0644 .k8s.images.tmp/*.tar
 sleep 1
 /bin/ls -1 .k8s.images.tmp/*.tar | xargs --no-run-if-empty -I '{}' gzip -f -9 '{}'
 sleep 2
-mv -f .k8s.images.tmp kubernetes-"${_k8s_ver}"-images
+mv -f .k8s.images.tmp k8s-"${_k8s_ver}"-images
 sleep 1
-tar -zcvf /tmp/kubernetes-"${_k8s_ver}"-images.tar.gz kubernetes-"${_k8s_ver}"-images
+tar -zcvf /tmp/k8s-"${_k8s_ver}"-images.tar.gz k8s-"${_k8s_ver}"-images
 sleep 2
-/bin/rm -fr kubernetes-"${_k8s_ver}"-images
+/bin/rm -fr k8s-"${_k8s_ver}"-images
 ###############################################################################
 
 _images=''
@@ -420,11 +425,11 @@ for image in ${_images[@]}; do
 done
 echo
 sleep 2
-docker image save -o /tmp/"metallb-${_metallb_ver}".tar ${_images[@]}
+docker image save -o /tmp/"metallb-${_metallb_ver}"-images.tar ${_images[@]}
 sleep 2
-chmod 0644 /tmp/"metallb-${_metallb_ver}".tar
+chmod 0644 /tmp/"metallb-${_metallb_ver}"-images.tar
 sleep 2
-gzip -f -9 /tmp/"metallb-${_metallb_ver}".tar
+gzip -f -9 /tmp/"metallb-${_metallb_ver}"-images.tar
 ###############################################################################
 
 #_images=''
