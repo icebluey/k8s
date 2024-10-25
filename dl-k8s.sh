@@ -201,8 +201,8 @@ find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.
 #wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
 #wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/rpm/kubeadm/10-kubeadm.conf"
 
-wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v0.16.2/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
-wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v0.16.2/cmd/kubepkg/templates/latest/rpm/kubeadm/10-kubeadm.conf"
+wget -c -t 0 -T 9 'https://raw.githubusercontent.com/icebluey/k8s/refs/heads/master/templates/10-kubeadm.conf'
+wget -c -t 0 -T 9 'https://raw.githubusercontent.com/icebluey/k8s/refs/heads/master/templates/kubelet.service'
 
 rm -fr /tmp/kubernetes
 sleep 1
