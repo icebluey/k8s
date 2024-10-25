@@ -106,6 +106,9 @@ _cni_plugins_ver="$(wget -qO- 'https://github.com/containernetworking/plugins/re
 wget -c -t 0 -T 9 "https://github.com/containernetworking/plugins/releases/download/v${_cni_plugins_ver}/cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 wget -c -t 0 -T 9 "https://github.com/containernetworking/plugins/releases/download/v${_cni_plugins_ver}/cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz"
 
+_flannel_cni_plugin_ver="$(wget -qO- 'https://github.com/flannel-io/cni-plugin/releases' | grep -i 'href="/flannel-io/cni-plugin/tree/v[0-9]' | sed 's|"|\n|g' | grep '^/flannel-io/cni-plugin/tree/' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
+wget -c -t 0 -T 9 "https://github.com/flannel-io/cni-plugin/releases/download/v${_flannel_cni_plugin_ver}/flannel-amd64"
+
 _cri_tools_ver="$(wget -qO- 'https://github.com/kubernetes-sigs/cri-tools/releases' | grep -i 'crictl.*linux.*\.t' | grep -i 'href="/kubernetes-sigs/cri-tools/releases/download/' | sed 's|"|\n|g' | grep -i '^/kubernetes-sigs/cri-tools/releases/download/' | sed -e 's|.*/v||g' -e 's|/c.*||g' | sort -V | uniq | tail -n 1)"
 wget -c -t 0 -T 9 "https://github.com/kubernetes-sigs/cri-tools/releases/download/v${_cri_tools_ver}/crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz.sha256"
 wget -c -t 0 -T 9 "https://github.com/kubernetes-sigs/cri-tools/releases/download/v${_cri_tools_ver}/crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
@@ -113,6 +116,7 @@ wget -c -t 0 -T 9 "https://github.com/kubernetes-sigs/cri-tools/releases/downloa
 _metallb_ver="$(wget -qO- 'https://github.com/metallb/metallb/tags' | grep -i 'href="/metallb/metallb/releases/tag/' | sed 's|"|\n|g' | grep -i '^/metallb/metallb/releases/tag/' | sed 's|.*/v||g' | grep -iv 'chart' | sort -V | uniq | tail -n 1)"
 wget -c -t 0 -T 9 "https://github.com/metallb/metallb/archive/refs/tags/v${_metallb_ver}.tar.gz" -O metallb-${_metallb_ver}.tar.gz
 
+# release-v${_calico_ver}.tgz contains images
 _calico_ver="$(wget -qO- 'https://github.com/projectcalico/calico/releases' | grep -i 'release-.*\.tgz' | sed -e 's|release-|\nrelease-|g' -e 's|tgz|tgz\n|g' | grep -i '^release-.*\.tgz' | sed -e 's|release-v||g' -e 's|\.tgz||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
 wget -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${_calico_ver}/release-v${_calico_ver}.tgz"
 
@@ -121,18 +125,12 @@ wget -c -t 0 -T 9 "https://github.com/projectcalico/calico/releases/download/v${
 #_dashboard_url="$(wget -qO- 'https://github.com/kubernetes/dashboard/releases' | grep -i 'https://raw.githubusercontent.com/kubernetes/dashboard/v' | sed -e 's| |\n|g' -e 's|"|\n|g' | grep -i '^https://raw.githubusercontent.com/kubernetes/dashboard/v' | sed 's|\.yaml.*|.yaml|g' | grep -ivE 'alpha|beta|rc[0-9]' | sort -V | uniq | tail -n1)"
 #wget -c -t 0 -T 9 "${_dashboard_url}" -O kube-dashboard.yaml
 
-_istio_ver="$(wget -qO- 'https://github.com/istio/istio/releases' | grep -i 'istio.*linux.*\.t' | grep -i 'href="/istio/istio/releases/download/' | sed 's|"|\n|g' | grep -i '^/istio/istio/releases/download/' | sed 's|/istio/istio/releases/download/||g' | sed 's|/.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
-wget -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
-wget -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istio-${_istio_ver}-linux-${_arch}.tar.gz"
-#wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istioctl-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
-#wget -q -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istioctl-${_istio_ver}-linux-${_arch}.tar.gz"
-
-_flannel_cni_plugin_ver="$(wget -qO- 'https://github.com/flannel-io/cni-plugin/releases' | grep -i 'href="/flannel-io/cni-plugin/tree/v[0-9]' | sed 's|"|\n|g' | grep '^/flannel-io/cni-plugin/tree/' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
-wget -c -t 0 -T 9 "https://github.com/flannel-io/cni-plugin/releases/download/v${_flannel_cni_plugin_ver}/flannel-amd64"
+#_istio_ver="$(wget -qO- 'https://github.com/istio/istio/releases' | grep -i 'istio.*linux.*\.t' | grep -i 'href="/istio/istio/releases/download/' | sed 's|"|\n|g' | grep -i '^/istio/istio/releases/download/' | sed 's|/istio/istio/releases/download/||g' | sed 's|/.*||g' | grep -ivE 'alpha|beta|rc' | sort -V | uniq | tail -n 1)"
+#wget -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
+#wget -c -t 0 -T 9 "https://github.com/istio/istio/releases/download/${_istio_ver}/istio-${_istio_ver}-linux-${_arch}.tar.gz"
 
 #wget -c -t 0 -T 9 "https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml" -O kube-flannel.yaml
-
-wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml" -O ingress-nginx.yaml
+#wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml" -O ingress-nginx.yaml
 
 sha256sum -c "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz.sha256"
 sleep 1
@@ -162,18 +160,16 @@ tar -xof "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
 sleep 1
 rm -f "crictl-v${_cri_tools_ver}-linux-${_arch}.tar.gz"
 
-sha256sum -c "istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
-#sha256sum -c "istioctl-${_istio_ver}-linux-${_arch}.tar.gz"
-sleep 1
-rm -f "istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
-#rm -f "istioctl-${_istio_ver}-linux-${_arch}.tar.gz"
-rm -fr istioctl
-tar -xof "istio-${_istio_ver}-linux-${_arch}.tar.gz"
-sleep 1
-rm -f "istio-${_istio_ver}-linux-${_arch}.tar.gz"
-mv -f "istio-${_istio_ver}/bin/istioctl" ./
-sleep 1
-rm -fr "istio-${_istio_ver}/bin"
+#sha256sum -c "istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
+#sleep 1
+#rm -f "istio-${_istio_ver}-linux-${_arch}.tar.gz.sha256"
+#rm -fr istioctl
+#tar -xof "istio-${_istio_ver}-linux-${_arch}.tar.gz"
+#sleep 1
+#rm -f "istio-${_istio_ver}-linux-${_arch}.tar.gz"
+#mv -f "istio-${_istio_ver}/bin/istioctl" ./
+#sleep 1
+#rm -fr "istio-${_istio_ver}/bin"
 
 tar -xof "metallb-${_metallb_ver}.tar.gz"
 sleep 1
@@ -200,8 +196,6 @@ _calico_release_dir=''
 sleep 1
 ls -1 "calico-${_calico_ver}"/images/*.tar | xargs -I '{}' gzip -f -9 '{}'
 find "calico-${_calico_ver}"/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | grep -iv '/calico-bpf' | xargs --no-run-if-empty -I '{}' strip '{}'
-
-
 
 #_release_ver="$(wget -qO- 'https://github.com/kubernetes/release/tags' | grep -i 'href="/kubernetes/release/releases/tag/' | sed 's|"|\n|g' | grep -i '^/kubernetes/release/releases/tag' | sed 's|.*/v||g' | sort -V | uniq | tail -n 1)"
 #wget -c -t 0 -T 9 "https://raw.githubusercontent.com/kubernetes/release/v${_release_ver}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
@@ -236,10 +230,9 @@ install -v -c -m 0755 plugins.tmp/* /tmp/kubernetes/usr/share/kubernetes/cni-plu
 
 #install -v -c -m 0644 kube-flannel.yaml /tmp/kubernetes/usr/share/kubernetes/
 #install -v -c -m 0644 kube-dashboard.yaml /tmp/kubernetes/usr/share/kubernetes/
-install -v -c -m 0644 ingress-nginx.yaml /tmp/kubernetes/usr/share/kubernetes/
-
-install -v -c -m 0755 istioctl /tmp/kubernetes/usr/bin/
-cp -pfr "istio-${_istio_ver}" /tmp/kubernetes/usr/share/kubernetes/
+#install -v -c -m 0644 ingress-nginx.yaml /tmp/kubernetes/usr/share/kubernetes/
+#install -v -c -m 0755 istioctl /tmp/kubernetes/usr/bin/
+#cp -pfr "istio-${_istio_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
 cp -pfr "metallb-${_metallb_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
@@ -262,8 +255,7 @@ install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/jq
 sleep 1
 mv -f /tmp/jq /tmp/kubernetes/usr/share/kubernetes/jq/jq
 
-
-###############################################################
+###############################################################################
 
 cd /tmp/kubernetes
 
@@ -292,35 +284,6 @@ if [[ "$(./usr/bin/kubeadm config images list 2>&1 | grep -iE 'k8s\.gcr|k8s\.io'
 fi
 
 # save images
-
-_images=''
-_images=($(./usr/bin/kubeadm config images list 2>/dev/null))
-###############################################################################
-install -m 0755 -d .k8s.images.tmp
-for image in ${_images[@]}; do
-    sleep 1
-    _clean_start_docker
-    sleep 5
-    _name="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $1}')"
-    _ver="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $2}' | sed 's|^[Vv]||g')"
-    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
-    sleep 2
-    docker images -a
-    sleep 2
-    docker image save -o .k8s.images.tmp/"${_name}_${_ver}.tar" "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
-    sleep 2
-    _name=''
-    _ver=''
-done
-chmod 0644 .k8s.images.tmp/*.tar
-sleep 1
-/bin/ls -1 .k8s.images.tmp/*.tar | xargs --no-run-if-empty -I '{}' gzip -f -9 '{}'
-sleep 2
-mv -f .k8s.images.tmp kubernetes-"${_k8s_ver}"-images
-sleep 1
-tar -zcvf /tmp/kubernetes-"${_k8s_ver}"-images.tar.gz kubernetes-"${_k8s_ver}"-images
-
-###############################################################################
 
 #_images=''
 #_images=($(cat usr/share/kubernetes/kube-dashboard.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
@@ -399,8 +362,56 @@ tar -zcvf /tmp/kubernetes-"${_k8s_ver}"-images.tar.gz kubernetes-"${_k8s_ver}"-i
 #sleep 2
 ###############################################################################
 
+#_images=''
+#_images=($(cat usr/share/kubernetes/ingress-nginx.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+###############################################################################
+#_clean_start_docker
+#for image in ${_images[@]}; do
+#    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+#    sleep 2
+#done
+#echo
+#sleep 2
+#docker image save -o usr/share/kubernetes/images/ingress-nginx.tar ${_images[@]}
+#sleep 2
+#chmod 0644 usr/share/kubernetes/images/ingress-nginx.tar
+#sleep 2
+#gzip -f -9 usr/share/kubernetes/images/ingress-nginx.tar
+#sleep 2
+###############################################################################
+
 _images=''
-_images=($(cat usr/share/kubernetes/ingress-nginx.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+_images=($(./usr/bin/kubeadm config images list 2>/dev/null))
+###############################################################################
+install -m 0755 -d .k8s.images.tmp
+for image in ${_images[@]}; do
+    sleep 1
+    _clean_start_docker
+    sleep 5
+    _name="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $1}')"
+    _ver="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $2}' | sed 's|^[Vv]||g')"
+    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+    sleep 2
+    docker images -a
+    sleep 2
+    docker image save -o .k8s.images.tmp/"${_name}_${_ver}.tar" "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+    sleep 2
+    _name=''
+    _ver=''
+done
+chmod 0644 .k8s.images.tmp/*.tar
+sleep 1
+/bin/ls -1 .k8s.images.tmp/*.tar | xargs --no-run-if-empty -I '{}' gzip -f -9 '{}'
+sleep 2
+mv -f .k8s.images.tmp kubernetes-"${_k8s_ver}"-images
+sleep 1
+tar -zcvf /tmp/kubernetes-"${_k8s_ver}"-images.tar.gz kubernetes-"${_k8s_ver}"-images
+sleep 2
+/bin/rm -fr kubernetes-"${_k8s_ver}"-images
+###############################################################################
+
+_images=''
+_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-frr.yaml usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-native.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
 ###############################################################################
 _clean_start_docker
 for image in ${_images[@]}; do
@@ -409,50 +420,28 @@ for image in ${_images[@]}; do
 done
 echo
 sleep 2
-docker image save -o usr/share/kubernetes/images/ingress-nginx.tar ${_images[@]}
+docker image save -o /tmp/"metallb-${_metallb_ver}".tar ${_images[@]}
 sleep 2
-chmod 0644 usr/share/kubernetes/images/ingress-nginx.tar
+chmod 0644 /tmp/"metallb-${_metallb_ver}".tar
 sleep 2
-gzip -f -9 usr/share/kubernetes/images/ingress-nginx.tar
-sleep 2
+gzip -f -9 /tmp/"metallb-${_metallb_ver}".tar
 ###############################################################################
 
-_images=''
-#_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/manifests/metallb.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
-_images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-frr.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
+#_images=''
 ###############################################################################
-_clean_start_docker
-for image in ${_images[@]}; do
-    docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
-    sleep 2
-done
-echo
-sleep 2
-docker image save -o usr/share/kubernetes/images/"metallb-${_metallb_ver}".tar ${_images[@]}
-sleep 2
-chmod 0644 usr/share/kubernetes/images/"metallb-${_metallb_ver}".tar
-sleep 2
-gzip -f -9 usr/share/kubernetes/images/"metallb-${_metallb_ver}".tar
-sleep 2
+#_clean_start_docker
+#docker pull istio/pilot:${_istio_ver}
+#sleep 2
+#docker pull istio/proxyv2:${_istio_ver}
+#echo
+#sleep 2
+#docker image save -o /tmp/"istio-${_istio_ver}".tar istio/pilot:${_istio_ver} istio/proxyv2:${_istio_ver}
+#sleep 2
+#chmod 0644 /tmp/"istio-${_istio_ver}".tar
+#sleep 2
+#gzip -f -9 /tmp/"istio-${_istio_ver}".tar
 ###############################################################################
 
-_images=''
-###############################################################################
-_clean_start_docker
-docker pull istio/pilot:${_istio_ver}
-sleep 2
-docker pull istio/proxyv2:${_istio_ver}
-echo
-sleep 2
-docker image save -o usr/share/kubernetes/images/"istio-${_istio_ver}".tar istio/pilot:${_istio_ver} istio/proxyv2:${_istio_ver}
-sleep 2
-chmod 0644 usr/share/kubernetes/images/"istio-${_istio_ver}".tar
-sleep 2
-gzip -f -9 usr/share/kubernetes/images/"istio-${_istio_ver}".tar
-sleep 2
-###############################################################################
-
-sleep 2
 _clean_docker
 
 echo 'runtime-endpoint: "unix:///run/containerd/containerd.sock"' > etc/crictl.yaml
@@ -547,7 +536,6 @@ systemctl start containerd.service > /dev/null 2>&1 || :
 sleep 10
 if ! ctr namespaces list | sed "1d" | grep -q -i "k8s\.io"; then ctr namespaces create "k8s.io"; fi
 sleep 1
-/bin/ls -1 kubeadm/*.tar.gz 2>/dev/null | xargs --no-run-if-empty -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
 /bin/ls -1 *.tar.gz 2>/dev/null | xargs --no-run-if-empty -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
 /bin/ls -1 *.tar 2>/dev/null | xargs --no-run-if-empty -I "{}" ctr --namespace "k8s.io" images import "{}"
 echo
@@ -560,22 +548,8 @@ crictl -r unix:///run/containerd/containerd.sock images
 sleep 1
 chmod 0755 usr/share/kubernetes/load-all-images.sh
 
-echo '
-cd "$(dirname "$0")"
-cd calico-[1-9]*/
-/bin/ls -1 images/*.tar.gz 2>/dev/null | xargs --no-run-if-empty -I {} bash -c "gzip -c -d {} | ctr --namespace k8s.io images import -"
-echo
-sleep 1
-ctr --namespace "k8s.io" images ls -q | grep -iv "^sha256:"
-echo
-sleep 1
-crictl -r unix:///run/containerd/containerd.sock images
-' > usr/share/kubernetes/load-calico-images.sh
-sleep 1
-chmod 0755 usr/share/kubernetes/load-calico-images.sh
-
 echo '## Install the dependencies
-#### RHEL 8
+#### RHEL 8/9
 ```
 yum install -y binutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
 ```
