@@ -216,7 +216,7 @@ install -m 0755 -d /tmp/kubernetes/etc/systemd/system/kubelet.service.d
 install -m 0755 -d /tmp/kubernetes/etc/kubernetes/manifests
 install -m 0755 -d /tmp/kubernetes/etc/kubernetes/pki/etcd
 install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/cni-plugins
-install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/images
+#install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/images
 install -m 0755 -d /tmp/kubernetes/etc/sysconfig
 
 #for file in ${_files[@]}; do
