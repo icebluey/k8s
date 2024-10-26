@@ -140,7 +140,8 @@ tar -xof "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz" -C plugins.tmp/
 sleep 1
 rm -f "cni-plugins-linux-${_arch}-v${_cni_plugins_ver}.tgz"
 ls -la plugins.tmp/portmap
-rm -f plugins.tmp/LICENSE
+rm -f plugins.tmp/LICENSE*
+rm -f plugins.tmp/README*
 
 rm -f plugins.tmp/flannel
 chmod 0755 flannel-amd64
