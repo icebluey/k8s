@@ -398,7 +398,6 @@ _images=($(./usr/bin/kubeadm config images list 2>/dev/null))
 ###############################################################################
 install -m 0755 -d .k8s.images.tmp
 for image in ${_images[@]}; do
-    sleep 1
     _clean_start_docker
     sleep 5
     _name="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $1}')"
@@ -430,6 +429,8 @@ if [ ! -f /.metallb.images.done.txt ]; then
     _clean_start_docker
     install -m 0755 -d .metallb.images.tmp
     for image in ${_images[@]}; do
+        _clean_start_docker
+        sleep 5
         _name="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $1}')"
         _ver="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $2}' | sed 's|^[Vv]||g')"
         docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
