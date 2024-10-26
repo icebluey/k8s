@@ -428,17 +428,28 @@ if [ ! -f /.metallb.images.done.txt ]; then
     _images=''
     _images=($(cat usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-frr.yaml usr/share/kubernetes/"metallb-${_metallb_ver}"/config/manifests/metallb-native.yaml | grep -i 'image: ' | awk '{print $2}' | sed 's|@sha.*||g' | sort -V | uniq))
     _clean_start_docker
+    install -m 0755 -d .metallb.images.tmp
     for image in ${_images[@]}; do
+        _name="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $1}')"
+        _ver="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $2}' | sed 's|^[Vv]||g')"
         docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
         sleep 2
+        docker images -a
+        sleep 2
+        docker image save -o .metallb.images.tmp/"${_name}_${_ver}.tar" "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
+        sleep 2
+        _name=''
+        _ver=''
     done
-    echo
+    chmod 0644 .metallb.images.tmp/*.tar
+    sleep 1
+    /bin/ls -1 .metallb.images.tmp/*.tar | xargs --no-run-if-empty -I '{}' gzip -f -9 '{}'
     sleep 2
-    docker image save -o /tmp/"metallb-${_metallb_ver}"-images.tar ${_images[@]}
+    mv -f .metallb.images.tmp "metallb-${_metallb_ver}"-images
+    sleep 1
+    tar -zcvf /tmp/"metallb-${_metallb_ver}"-images.tar.gz "metallb-${_metallb_ver}"-images
     sleep 2
-    chmod 0644 /tmp/"metallb-${_metallb_ver}"-images.tar
-    sleep 2
-    gzip -f -9 /tmp/"metallb-${_metallb_ver}"-images.tar
+    /bin/rm -fr "metallb-${_metallb_ver}"-images
     echo 1 > /.metallb.images.done.txt
 fi
 ###############################################################################
