@@ -220,12 +220,12 @@ wget -c -t 0 -T 9 'https://raw.githubusercontent.com/icebluey/k8s/refs/heads/mas
 rm -fr /tmp/kubernetes
 sleep 1
 install -m 0755 -d /tmp/kubernetes/usr/bin
-install -m 0755 -d /tmp/kubernetes/etc/systemd/system/kubelet.service.d
-install -m 0755 -d /tmp/kubernetes/etc/kubernetes/manifests
-install -m 0755 -d /tmp/kubernetes/etc/kubernetes/pki/etcd
 install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/cni-plugins
 #install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/images
-install -m 0755 -d /tmp/kubernetes/etc/sysconfig
+#install -m 0755 -d /tmp/kubernetes/etc/sysconfig
+#install -m 0755 -d /tmp/kubernetes/etc/systemd/system/kubelet.service.d
+#install -m 0755 -d /tmp/kubernetes/etc/kubernetes/manifests
+#install -m 0755 -d /tmp/kubernetes/etc/kubernetes/pki/etcd
 
 #for file in ${_files[@]}; do
 #    install -v -c -m 0755 ${file} /tmp/kubernetes/usr/bin/
@@ -237,7 +237,7 @@ rm -fr /tmp/.k8s_bin
 
 install -v -c -m 0755 helm.tmp/linux-amd64/helm /tmp/kubernetes/usr/bin/
 install -v -c -m 0755 crictl /tmp/kubernetes/usr/bin/
-install -v -c -m 0644 10-kubeadm.conf /tmp/kubernetes/etc/systemd/system/kubelet.service.d/10-kubeadm.conf.example
+install -v -c -m 0644 10-kubeadm.conf /tmp/kubernetes/usr/share/kubernetes/10-kubeadm.conf.example
 install -v -c -m 0644 kubelet.service /tmp/kubernetes/usr/share/kubernetes/
 install -v -c -m 0755 plugins.tmp/* /tmp/kubernetes/usr/share/kubernetes/cni-plugins/
 
@@ -473,15 +473,13 @@ fi
 _images=''
 _clean_docker
 
-echo 'runtime-endpoint: "unix:///run/containerd/containerd.sock"' > etc/crictl.yaml
+echo 'runtime-endpoint: "unix:///run/containerd/containerd.sock"' > usr/share/kubernetes/crictl.yaml.example
 sleep 1
-chmod 0644 etc/crictl.yaml
-echo 'KUBELET_EXTRA_ARGS="--resolv-conf=/etc/kubernetes/coredns-resolv.conf"' > etc/sysconfig/kubelet
+chmod 0644 usr/share/kubernetes/crictl.yaml.example
+
+echo 'KUBELET_EXTRA_ARGS="--resolv-conf=/etc/kubernetes/coredns-resolv.conf"' > usr/share/kubernetes/kubelet.sysconfig
 sleep 1
-chmod 0644 etc/sysconfig/kubelet
-echo 'nameserver 8.8.8.8' > etc/kubernetes/coredns-resolv.conf.example
-sleep 1
-chmod 0644 etc/kubernetes/coredns-resolv.conf.example
+chmod 0644 usr/share/kubernetes/kubelet.sysconfig
 
 ./usr/bin/kubeadm config print init-defaults | sed "s|kubernetesVersion: .*|kubernetesVersion: ${_k8s_ver}|g" > usr/share/kubernetes/example-kubeadm-config.yaml
 sed 's| criSocket: .*| criSocket: unix:///run/containerd/containerd.sock|g' -i usr/share/kubernetes/example-kubeadm-config.yaml
@@ -539,22 +537,25 @@ net.ipv4.tcp_keepalive_probes = 10" > /etc/sysctl.d/999-k8s.conf
 sleep 1
 chmod 0644 /etc/sysctl.d/999-k8s.conf
 
-if [[ -f /etc/kubernetes/coredns-resolv.conf.example ]] && [[ ! -e /etc/kubernetes/coredns-resolv.conf ]]; then
-    cp -v /etc/kubernetes/coredns-resolv.conf.example /etc/kubernetes/coredns-resolv.conf
-fi
-if [[ -f /etc/systemd/system/kubelet.service.d/10-kubeadm.conf.example ]] && [[ ! -e /etc/systemd/system/kubelet.service.d/10-kubeadm.conf ]]; then
-    cp -v /etc/systemd/system/kubelet.service.d/10-kubeadm.conf.example /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-fi
-sleep 1
+[ -d /etc/kubernetes/manifests ] || install -m 0755 -d /etc/kubernetes/manifests && chown root:root /etc/kubernetes/manifests
+[ -d /etc/kubernetes/pki/etcd ] || install -m 0755 -d /etc/kubernetes/pki/etcd && chown root:root /etc/kubernetes/pki/etcd
+[ -d /var/lib/etcd ] || install -m 0700 -d /var/lib/etcd && chown root:root /var/lib/etcd
+[ -d /var/lib/kubelet ] || install -m 0700 -d /var/lib/kubelet && chown root:root /var/lib/kubelet
+[ -d /etc/cni/net.d ] || install -m 0700 -d /etc/cni/net.d && chown root:root /etc/cni/net.d
+
+[ -f /etc/kubernetes/coredns-resolv.conf ] || echo "nameserver 8.8.8.8" > /etc/kubernetes/coredns-resolv.conf
+[ -f /etc/crictl.yaml ] || install -m 0644 crictl.yaml.example /etc/crictl.yaml
+[ -f /etc/sysconfig/kubelet ] || install -m 0644 kubelet.sysconfig /etc/sysconfig/kubelet
+[ -d /etc/systemd/system/kubelet.service.d ] || install -m 0755 -d /etc/systemd/system/kubelet.service.d
+[ -f /etc/systemd/system/kubelet.service.d/10-kubeadm.conf ] || install -m 0644 10-kubeadm.conf.example /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+install -m 0755 -d /opt/cni/bin
+install -m 0755 cni-plugins/* /opt/cni/bin/
+[ -f /usr/bin/jq ] || install -m 0755 jq/jq /usr/bin/
+
 /sbin/sysctl --system >/dev/null 2>&1 || : 
 /bin/systemctl daemon-reload >/dev/null 2>&1 || : 
 ' > usr/share/kubernetes/.install.txt
-
-echo 'install -m 0755 -d /opt/cni/bin
-install -m 0755 cni-plugins/* /opt/cni/bin/
-
-[ -f /usr/bin/jq ] || install -m 0755 jq/jq /usr/bin/
-' >> usr/share/kubernetes/.install.txt
 
 echo '
 cd "$(dirname "$0")"
