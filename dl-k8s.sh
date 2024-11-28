@@ -96,6 +96,11 @@ done
 sleep 1
 rm -f kube*.sha256
 /bin/ls -lah
+echo
+echo
+./kubeadm config images list
+echo
+echo
 
 ###############################################################################
 
