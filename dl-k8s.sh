@@ -518,7 +518,15 @@ br_netfilter
 ip_vs
 ip_vs_rr
 ip_vs_wrr
-ip_vs_sh" > /etc/modules-load.d/k8s.conf
+ip_vs_lc
+ip_vs_wlc
+ip_vs_lblc
+ip_vs_lblcr
+ip_vs_sh
+ip_vs_dh
+ip_vs_sed
+ip_vs_nq
+ip_vs_mh" > /etc/modules-load.d/k8s.conf
 sleep 1
 chmod 0644 /etc/modules-load.d/k8s.conf
 
@@ -624,7 +632,15 @@ kubectl taint nodes --all node-role.kubernetes.io/master:NoSchedule-
 modprobe -- ip_vs
 modprobe -- ip_vs_rr
 modprobe -- ip_vs_wrr
+modprobe -- ip_vs_lc
+modprobe -- ip_vs_wlc
+modprobe -- ip_vs_lblc
+modprobe -- ip_vs_lblcr
 modprobe -- ip_vs_sh
+modprobe -- ip_vs_dh
+modprobe -- ip_vs_sed
+modprobe -- ip_vs_nq
+modprobe -- ip_vs_mh
 modprobe -- nf_conntrack
 #modprobe -- nf_conntrack_ipv4
 
