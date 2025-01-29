@@ -31,20 +31,6 @@ jobs:
           _release_ver="v$(date -u +%Y-%m-%d)"
           echo "_release_ver=${_release_ver}" >> $GITHUB_ENV
 
-      - name: Package K8s 1.30
-        run: |
-          sudo /bin/rm -fr /tmp/.artifacts
-          sudo /bin/rm -fr /tmp/*
-          sudo mkdir /tmp/.artifacts
-          sudo bash dl-k8s.sh "1.30.6"
-          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-          sudo chmod 0644 /tmp/.artifacts/*.tar*
-      - name: Upload files
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env._release_ver }}
-          files: /tmp/.artifacts/*.tar*
-
       - name: Package K8s 1.31
         run: |
           #sudo bash dl-etcd.sh
@@ -54,7 +40,21 @@ jobs:
           sudo /bin/rm -fr /tmp/.artifacts
           sudo /bin/rm -fr /tmp/*
           sudo mkdir /tmp/.artifacts
-          sudo bash dl-k8s.sh "1.31.2"
+          sudo bash dl-k8s.sh "1.31.5"
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo chmod 0644 /tmp/.artifacts/*.tar*
+      - name: Upload files
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env._release_ver }}
+          files: /tmp/.artifacts/*.tar*
+
+      - name: Package K8s 1.32
+        run: |
+          sudo /bin/rm -fr /tmp/.artifacts
+          sudo /bin/rm -fr /tmp/*
+          sudo mkdir /tmp/.artifacts
+          sudo bash dl-k8s.sh "1.32.1"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           sudo chmod 0644 /tmp/.artifacts/*.tar*
       - name: Upload files
