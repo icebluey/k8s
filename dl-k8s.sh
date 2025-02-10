@@ -570,8 +570,84 @@ install -m 0755 cni-plugins/* /opt/cni/bin/
 /bin/systemctl daemon-reload >/dev/null 2>&1 || : 
 ' > usr/share/kubernetes/.install.txt
 
+# CoreOS
 echo '
+#
+# CoreOS
+#
 cd "$(dirname "$0")"
+/bin/systemctl daemon-reload >/dev/null 2>&1 || : 
+rm -f /etc/systemd/system/kubelet.service
+sleep 1
+install -v -c -m 0644 kubelet.service /etc/systemd/system/
+echo "nf_conntrack
+br_netfilter
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_lc
+ip_vs_wlc
+ip_vs_lblc
+ip_vs_lblcr
+ip_vs_sh
+ip_vs_dh
+ip_vs_sed
+ip_vs_nq
+ip_vs_mh" > /etc/modules-load.d/k8s.conf
+sleep 1
+chmod 0644 /etc/modules-load.d/k8s.conf
+
+echo "net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-arptables = 1
+fs.file-max = 6553600
+vm.max_map_count = 655360
+net.core.somaxconn = 32768
+net.netfilter.nf_conntrack_max = 1000000
+net.ipv4.ip_local_port_range = 40000 65500
+net.ipv4.ip_forward = 1
+net.ipv4.tcp_fin_timeout = 30
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_fastopen = 3
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_slow_start_after_idle = 0
+net.ipv4.tcp_keepalive_time = 1200
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 10" > /etc/sysctl.d/999-k8s.conf
+sleep 1
+chmod 0644 /etc/sysctl.d/999-k8s.conf
+
+[ -d /etc/kubernetes/manifests ] || install -m 0755 -d /etc/kubernetes/manifests && chown root:root /etc/kubernetes/manifests
+[ -d /etc/kubernetes/pki/etcd ] || install -m 0755 -d /etc/kubernetes/pki/etcd && chown root:root /etc/kubernetes/pki/etcd
+[ -d /var/lib/etcd ] || install -m 0700 -d /var/lib/etcd && chown root:root /var/lib/etcd
+[ -d /var/lib/kubelet ] || install -m 0700 -d /var/lib/kubelet && chown root:root /var/lib/kubelet
+[ -d /etc/cni/net.d ] || install -m 0700 -d /etc/cni/net.d && chown root:root /etc/cni/net.d
+
+[ -f /etc/kubernetes/coredns-resolv.conf ] || echo "nameserver 8.8.8.8" > /etc/kubernetes/coredns-resolv.conf
+[ -f /etc/crictl.yaml ] || install -m 0644 crictl.yaml.example /etc/crictl.yaml
+[ -f /etc/sysconfig/kubelet ] || install -m 0644 kubelet.sysconfig /etc/sysconfig/kubelet
+[ -d /etc/systemd/system/kubelet.service.d ] || install -m 0755 -d /etc/systemd/system/kubelet.service.d
+[ -f /etc/systemd/system/kubelet.service.d/10-kubeadm.conf ] || install -m 0644 10-kubeadm.conf.example /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+install -m 0755 -d /opt/cni/bin
+install -m 0755 cni-plugins/* /opt/cni/bin/
+[ -f /usr/bin/jq ] || install -m 0755 jq/jq /usr/bin/ 2>/dev/null || install -m 0755 jq/jq /var/usr/bin/
+
+/sbin/sysctl --system >/dev/null 2>&1 || : 
+/bin/systemctl daemon-reload >/dev/null 2>&1 || : 
+
+sed '\''/^# vim:ts=4:sw=4/i PATH=/var/usr/bin:/var/usr/sbin:$PATH; export PATH'\'' -i /etc/bashrc
+[-f /etc/containerd/config.toml.orig ] || /bin/cp -v /etc/containerd/config.toml /etc/containerd/config.toml.orig
+install -m 0755 -d /etc/containerd/certs.d
+install -m 0755 -d /etc/containerd/ocicrypt/keys
+containerd config default | sed '\''s|SystemdCgroup =.*|SystemdCgroup = true|g'\'' | sed '\''/disable_apparmor/s|false|true|g'\'' > /etc/containerd/config.toml
+' > usr/share/kubernetes/.coreos-install.txt
+
+echo '
+if [ -d /var/usr/bin ] && ! env | grep -qi '/var/usr/bin'; then
+    PATH=/var/usr/bin:/var/usr/sbin:$PATH; export PATH
+fi
+
 /bin/systemctl daemon-reload >/dev/null 2>&1 || : 
 sleep 1
 /bin/systemctl start containerd.service >/dev/null 2>&1 || : 
