@@ -5,9 +5,9 @@ umask 022
 
 cd "$(dirname "$0")"
 
-#https://dl.k8s.io/release/v1.31.1/bin/linux/amd64/kubeadm
-#https://dl.k8s.io/release/v1.31.1/bin/linux/amd64/kubelet
-#https://dl.k8s.io/release/v1.31.1/bin/linux/amd64/kubectl
+#https://dl.k8s.io/release/v1.32.2/bin/linux/amd64/kubeadm
+#https://dl.k8s.io/release/v1.32.2/bin/linux/amd64/kubelet
+#https://dl.k8s.io/release/v1.32.2/bin/linux/amd64/kubectl
 
 _clean_start_docker() {
     systemctl daemon-reload > /dev/null 2>&1 || : 
