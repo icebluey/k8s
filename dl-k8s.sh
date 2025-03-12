@@ -748,11 +748,12 @@ sleep 2
 chown -R root:root /tmp/kubernetes
 echo
 sleep 2
-tar --format=gnu -cvf - * | xz --threads=2 -f -z -9 > /tmp/"k8s-${_k8s_ver}-1_amd64.tar.xz"
+tar --format=gnu -cvf - * | xz --threads=$(cat /proc/cpuinfo | grep -i '^processor' | wc -l) -f -z -9 > /tmp/"k8s-${_k8s_ver}-1_amd64.tar.xz"
 echo
 sleep 2
 cd /tmp
 openssl dgst -r -sha256 "k8s-${_k8s_ver}-1_amd64.tar.xz" > "k8s-${_k8s_ver}-1_amd64.tar.xz".sha256
+openssl dgst -r -sha256 "k8s-${_k8s_ver}-images.tar.gz" > "k8s-${_k8s_ver}-images.tar.gz".sha256
 sleep 2
 
 cd /tmp
