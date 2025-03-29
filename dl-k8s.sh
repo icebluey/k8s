@@ -614,7 +614,10 @@ net.ipv4.tcp_syncookies = 1
 net.ipv4.tcp_slow_start_after_idle = 0
 net.ipv4.tcp_keepalive_time = 1200
 net.ipv4.tcp_keepalive_intvl = 30
-net.ipv4.tcp_keepalive_probes = 10" > /etc/sysctl.d/999-k8s.conf
+net.ipv4.tcp_keepalive_probes = 10
+# Disable source route verification for multiple interfaces
+net.ipv4.conf.default.rp_filter = 0
+net.ipv4.conf.*.rp_filter = 0" > /etc/sysctl.d/999-k8s.conf
 sleep 1
 chmod 0644 /etc/sysctl.d/999-k8s.conf
 
@@ -668,15 +671,17 @@ sleep 1
 chmod 0755 usr/share/kubernetes/load-images.sh
 
 echo '## Install the dependencies
-#### RHEL 8/9
+#### el8 / el9
 ```
-yum install -y binutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
+#binutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
+dnf install -y iptables ipset ipvsadm conntrack-tools iproute socat ethtool nfs-utils
+
 ```
-#### RHEL 7 / CentOS 7
+#### el7
 ```
 yum install -y binutils coreutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
 ```
-#### Debian / Ubuntu 20.04
+#### Debian / Ubuntu 20.04+
 ```
 apt install -y binutils coreutils util-linux socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack iproute2 nfs-common 
 ```
