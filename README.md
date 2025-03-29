@@ -1,9 +1,11 @@
 ## Install the dependencies
-#### RHEL 8
+#### el8 / el9
 ```
-yum install -y binutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
+#binutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
+dnf install -y iptables ipset ipvsadm conntrack-tools iproute socat ethtool nfs-utils
+
 ```
-#### RHEL 7 / CentOS 7
+#### el7
 ```
 yum install -y binutils coreutils util-linux findutils socat ethtool iptables ebtables ipvsadm ipset psmisc bash-completion conntrack-tools iproute nfs-utils 
 ```
