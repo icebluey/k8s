@@ -616,6 +616,7 @@ net.ipv4.tcp_keepalive_time = 1200
 net.ipv4.tcp_keepalive_intvl = 30
 net.ipv4.tcp_keepalive_probes = 10
 # Disable source route verification for multiple interfaces
+net.ipv4.conf.all.rp_filter = 0
 net.ipv4.conf.default.rp_filter = 0
 net.ipv4.conf.*.rp_filter = 0" > /etc/sysctl.d/999-k8s.conf
 sleep 1
