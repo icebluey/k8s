@@ -266,11 +266,11 @@ sleep 1
 if [ -f /.calico.images.done.txt ]; then
     rm -fr "calico-${_calico_ver}"/images
 else
-    mv -f "calico-${_calico_ver}"/images "calico-${_calico_ver}"-images
+    mv -f "calico-${_calico_ver}"/images "calico-${_calico_image_ver}"-images
     sleep 1
-    tar -zcvf /tmp/"calico-${_calico_ver}"-images.tar.gz "calico-${_calico_ver}"-images
+    tar -zcvf /tmp/"calico-${_calico_image_ver}"-images.tar.gz "calico-${_calico_image_ver}"-images
     sleep 2
-    rm -fr "calico-${_calico_ver}"-images
+    rm -fr "calico-${_calico_image_ver}"-images
     echo 1 > /.calico.images.done.txt
 fi
 
