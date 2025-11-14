@@ -40,7 +40,7 @@ jobs:
           sudo /bin/rm -fr /tmp/.artifacts
           sudo /bin/rm -fr /tmp/*
           sudo mkdir /tmp/.artifacts
-          sudo bash dl-k8s.sh "1.34.1"
+          sudo bash dl-k8s.sh "1.34.2"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           sudo chmod 0644 /tmp/.artifacts/*.tar*
       - name: Upload files
@@ -54,7 +54,7 @@ jobs:
           sudo /bin/rm -fr /tmp/.artifacts
           sudo /bin/rm -fr /tmp/*
           sudo mkdir /tmp/.artifacts
-          sudo bash dl-k8s.sh "1.32.9"
+          sudo bash dl-k8s.sh "1.32.10"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           sudo chmod 0644 /tmp/.artifacts/*.tar*
       - name: Upload files
@@ -68,7 +68,7 @@ jobs:
           sudo /bin/rm -fr /tmp/.artifacts
           sudo /bin/rm -fr /tmp/*
           sudo mkdir /tmp/.artifacts
-          sudo bash dl-k8s.sh "1.33.5"
+          sudo bash dl-k8s.sh "1.33.6"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           sudo chmod 0644 /tmp/.artifacts/*.tar*
       - name: Upload files
