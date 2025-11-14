@@ -193,7 +193,40 @@ sleep 1
 chown -R root:root "calico-${_calico_ver}"
 find "calico-${_calico_ver}"/ -type d | xargs --no-run-if-empty -I '{}' chmod 0755 '{}'
 find "calico-${_calico_ver}"/bin/ -type f -iname 'calicoctl' -o -iname 'calicoctl-linux-*' -o -iname 'calico-bpf' | grep -v '/bin/cni/' | xargs --no-run-if-empty -I '{}' chmod 0755 '{}'
-chmod 0644 "calico-${_calico_ver}"/images/*tar*
+
+#chmod 0644 "calico-${_calico_ver}"/images/*tar*
+rm -fr "calico-${_calico_ver}"/images
+mkdir "calico-${_calico_ver}"/images
+cd "calico-${_calico_ver}"/images
+systemctl stop containerd.service
+sleep 1
+rm -fr /var/lib/containerd/*
+sleep 1
+systemctl start containerd.service
+# pull
+ctr -n k8s.io image pull quay.io/calico/cni:v${_calico_ver}
+ctr -n k8s.io image pull quay.io/calico/dikastes:v${_calico_ver}
+ctr -n k8s.io image pull quay.io/calico/flannel-migration-controller:v${_calico_ver}
+ctr -n k8s.io image pull quay.io/calico/kube-controllers:v${_calico_ver}
+ctr -n k8s.io image pull quay.io/calico/node:v${_calico_ver}
+ctr -n k8s.io image pull quay.io/calico/pod2daemon-flexvol:v${_calico_ver}
+ctr -n k8s.io image pull quay.io/calico/typha:v${_calico_ver}
+# export
+ctr -n k8s.io images export calico-cni.tar quay.io/calico/cni:v${_calico_ver}
+ctr -n k8s.io images export calico-dikastes.tar quay.io/calico/dikastes:v${_calico_ver}
+ctr -n k8s.io images export calico-flannel-migration-controller.tar quay.io/calico/flannel-migration-controller:v${_calico_ver}
+ctr -n k8s.io images export calico-kube-controllers.tar quay.io/calico/kube-controllers:v${_calico_ver}
+ctr -n k8s.io images export calico-node.tar quay.io/calico/node:v${_calico_ver}
+ctr -n k8s.io images export calico-pod2daemon.tar quay.io/calico/pod2daemon-flexvol:v${_calico_ver}
+ctr -n k8s.io images export calico-typha.tar quay.io/calico/typha:v${_calico_ver}
+sleep 2
+systemctl stop containerd.service
+sleep 1
+rm -fr /var/lib/containerd/*
+sleep 1
+systemctl start containerd.service
+cd -
+
 rm -f "calico-${_calico_ver}"/bin/*darwin*
 rm -f "calico-${_calico_ver}"/bin/*windows*
 rm -f "calico-${_calico_ver}"/bin/*.exe
@@ -267,7 +300,7 @@ cp -pfr "calico-${_calico_ver}" /tmp/kubernetes/usr/share/kubernetes/
 
 # jq
 rm -fr /tmp/jq
-wget -q -c "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64" -O /tmp/jq
+wget -q -c "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-amd64" -O /tmp/jq
 chmod 0755 /tmp/jq
 strip /tmp/jq
 install -m 0755 -d /tmp/kubernetes/usr/share/kubernetes/jq
