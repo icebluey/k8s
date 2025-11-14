@@ -17,7 +17,8 @@ _clean_start_docker() {
     sleep 1
     systemctl stop containerd.service > /dev/null 2>&1 || : 
     sleep 1
-    /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
+    /bin/rm -fr /var/lib/docker/* /var/lib/containerd/*
+    /bin/rm -fr /mnt/docker-data/* /mnt/containerd-data/*
     ip link set docker0 down > /dev/null 2>&1 || : 
     ip link delete docker0 > /dev/null 2>&1 || : 
     sleep 1
@@ -35,7 +36,8 @@ _clean_docker() {
     sleep 1
     systemctl stop containerd.service > /dev/null 2>&1 || : 
     sleep 1
-    /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
+    /bin/rm -fr /var/lib/docker/* /var/lib/containerd/*
+    /bin/rm -fr /mnt/docker-data/* /mnt/containerd-data/*
     ip link set docker0 down > /dev/null 2>&1 || : 
     ip link delete docker0 > /dev/null 2>&1 || : 
 }
@@ -198,55 +200,55 @@ find "calico-${_calico_ver}"/bin/ -type f -iname 'calicoctl' -o -iname 'calicoct
 rm -fr "calico-${_calico_ver}"/images
 mkdir "calico-${_calico_ver}"/images
 cd "calico-${_calico_ver}"/images
-#systemctl stop containerd.service
-#sleep 1
-#rm -fr /var/lib/containerd/*
-#sleep 1
-#systemctl start containerd.service
-# pull
-#sleep 1
-#if ! ctr namespaces list | sed "1d" | grep -q -i "k8s\.io"; then ctr namespaces create "k8s.io"; fi
-#ctr -n k8s.io image pull quay.io/calico/cni:v${_calico_ver}
-#ctr -n k8s.io image pull quay.io/calico/dikastes:v${_calico_ver}
-#ctr -n k8s.io image pull quay.io/calico/flannel-migration-controller:v${_calico_ver}
-#ctr -n k8s.io image pull quay.io/calico/kube-controllers:v${_calico_ver}
-#ctr -n k8s.io image pull quay.io/calico/node:v${_calico_ver}
-#ctr -n k8s.io image pull quay.io/calico/pod2daemon-flexvol:v${_calico_ver}
-#ctr -n k8s.io image pull quay.io/calico/typha:v${_calico_ver}
-# export
-#ctr -n k8s.io images export calico-cni.tar quay.io/calico/cni:v${_calico_ver}
-#ctr -n k8s.io images export calico-dikastes.tar quay.io/calico/dikastes:v${_calico_ver}
-#ctr -n k8s.io images export calico-flannel-migration-controller.tar quay.io/calico/flannel-migration-controller:v${_calico_ver}
-#ctr -n k8s.io images export calico-kube-controllers.tar quay.io/calico/kube-controllers:v${_calico_ver}
-#ctr -n k8s.io images export calico-node.tar quay.io/calico/node:v${_calico_ver}
-#ctr -n k8s.io images export calico-pod2daemon.tar quay.io/calico/pod2daemon-flexvol:v${_calico_ver}
-#ctr -n k8s.io images export calico-typha.tar quay.io/calico/typha:v${_calico_ver}
-#sleep 2
-#systemctl stop containerd.service
-#sleep 1
-#rm -fr /var/lib/containerd/*
-#sleep 1
-#systemctl start containerd.service
 
-_clean_start_docker
-sleep 2
+systemctl stop containerd.service
+sleep 1
+rm -fr /var/lib/containerd/* /mnt/containerd-data/*
+sleep 1
+systemctl start containerd.service
+sleep 1
 _calico_image_ver=$(wget -qO- 'https://github.com/projectcalico/calico/tags/' | grep -i 'calico/releases/tag/' | grep ""${_calico_ver%.*}"\." | sed 's|"|\n|g' | grep -i 'calico/releases/tag/' | sed -e 's|.*calico/releases/tag/v||g' -e 's| *||g' | sort -V | uniq | tail -n1)
+if ! ctr namespaces list | sed "1d" | grep -q -i "k8s\.io"; then ctr namespaces create "k8s.io"; fi
 # pull
-docker pull quay.io/calico/cni:v${_calico_image_ver}
-docker pull quay.io/calico/dikastes:v${_calico_image_ver}
-docker pull quay.io/calico/flannel-migration-controller:v${_calico_image_ver}
-docker pull quay.io/calico/kube-controllers:v${_calico_image_ver}
-docker pull quay.io/calico/node:v${_calico_image_ver}
-docker pull quay.io/calico/pod2daemon-flexvol:v${_calico_image_ver}
-docker pull quay.io/calico/typha:v${_calico_image_ver}
+ctr -n k8s.io images pull quay.io/calico/cni:v${_calico_image_ver}
+ctr -n k8s.io images pull quay.io/calico/dikastes:v${_calico_image_ver}
+ctr -n k8s.io images pull quay.io/calico/flannel-migration-controller:v${_calico_image_ver}
+ctr -n k8s.io images pull quay.io/calico/kube-controllers:v${_calico_image_ver}
+ctr -n k8s.io images pull quay.io/calico/node:v${_calico_image_ver}
+ctr -n k8s.io images pull quay.io/calico/pod2daemon-flexvol:v${_calico_image_ver}
+ctr -n k8s.io images pull quay.io/calico/typha:v${_calico_image_ver}
 # export
-docker image save -o calico-cni-v${_calico_image_ver}.tar quay.io/calico/cni:v${_calico_image_ver}
-docker image save -o calico-dikastes-v${_calico_image_ver}.tar quay.io/calico/dikastes:v${_calico_image_ver}
-docker image save -o calico-flannel-migration-controller-v${_calico_image_ver}.tar quay.io/calico/flannel-migration-controller:v${_calico_image_ver}
-docker image save -o calico-kube-controllers-v${_calico_image_ver}.tar quay.io/calico/kube-controllers:v${_calico_image_ver}
-docker image save -o calico-node-v${_calico_image_ver}.tar quay.io/calico/node:v${_calico_image_ver}
-docker image save -o calico-pod2daemon-v${_calico_image_ver}.tar quay.io/calico/pod2daemon-flexvol:v${_calico_image_ver}
-docker image save -o calico-typha-v${_calico_image_ver}.tar quay.io/calico/typha:v${_calico_image_ver}
+ctr -n k8s.io images export calico-cni-v${_calico_image_ver}.tar quay.io/calico/cni:v${_calico_image_ver}
+ctr -n k8s.io images export calico-dikastes-v${_calico_image_ver}.tar quay.io/calico/dikastes:v${_calico_image_ver}
+ctr -n k8s.io images export calico-flannel-migration-controller-v${_calico_image_ver}.tar quay.io/calico/flannel-migration-controller:v${_calico_image_ver}
+ctr -n k8s.io images export calico-kube-controllers-v${_calico_image_ver}.tar quay.io/calico/kube-controllers:v${_calico_image_ver}
+ctr -n k8s.io images export calico-node-v${_calico_image_ver}.tar quay.io/calico/node:v${_calico_image_ver}
+ctr -n k8s.io images export calico-pod2daemon-v${_calico_image_ver}.tar quay.io/calico/pod2daemon-flexvol:v${_calico_image_ver}
+ctr -n k8s.io images export calico-typha-v${_calico_image_ver}.tar quay.io/calico/typha:v${_calico_image_ver}
+
+sleep 2
+systemctl stop containerd.service
+sleep 1
+rm -fr /var/lib/containerd/* /mnt/containerd-data/*
+
+#_clean_start_docker
+#_calico_image_ver=$(wget -qO- 'https://github.com/projectcalico/calico/tags/' | grep -i 'calico/releases/tag/' | grep ""${_calico_ver%.*}"\." | sed 's|"|\n|g' | grep -i 'calico/releases/tag/' | sed -e 's|.*calico/releases/tag/v||g' -e 's| *||g' | sort -V | uniq | tail -n1)
+# pull
+#docker pull quay.io/calico/cni:v${_calico_image_ver}
+#docker pull quay.io/calico/dikastes:v${_calico_image_ver}
+#docker pull quay.io/calico/flannel-migration-controller:v${_calico_image_ver}
+#docker pull quay.io/calico/kube-controllers:v${_calico_image_ver}
+#docker pull quay.io/calico/node:v${_calico_image_ver}
+#docker pull quay.io/calico/pod2daemon-flexvol:v${_calico_image_ver}
+#docker pull quay.io/calico/typha:v${_calico_image_ver}
+# save
+#docker image save -o calico-cni-v${_calico_image_ver}.tar quay.io/calico/cni:v${_calico_image_ver}
+#docker image save -o calico-dikastes-v${_calico_image_ver}.tar quay.io/calico/dikastes:v${_calico_image_ver}
+#docker image save -o calico-flannel-migration-controller-v${_calico_image_ver}.tar quay.io/calico/flannel-migration-controller:v${_calico_image_ver}
+#docker image save -o calico-kube-controllers-v${_calico_image_ver}.tar quay.io/calico/kube-controllers:v${_calico_image_ver}
+#docker image save -o calico-node-v${_calico_image_ver}.tar quay.io/calico/node:v${_calico_image_ver}
+#docker image save -o calico-pod2daemon-v${_calico_image_ver}.tar quay.io/calico/pod2daemon-flexvol:v${_calico_image_ver}
+#docker image save -o calico-typha-v${_calico_image_ver}.tar quay.io/calico/typha:v${_calico_image_ver}
 
 sleep 1
 chmod 0644 *.tar
@@ -463,7 +465,6 @@ _images=($(./usr/bin/kubeadm config images list 2>/dev/null))
 install -m 0755 -d .k8s.images.tmp
 for image in ${_images[@]}; do
     _clean_start_docker
-    sleep 2
     _name="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $1}')"
     _ver="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $2}' | sed 's|^[Vv]||g')"
     docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
@@ -494,7 +495,6 @@ if [ ! -f /.metallb.images.done.txt ]; then
     install -m 0755 -d .metallb.images.tmp
     for image in ${_images[@]}; do
         _clean_start_docker
-        sleep 2
         _name="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $1}')"
         _ver="$(echo ${image} | awk -F/ '{print $NF}' | awk -F: '{print $2}' | sed 's|^[Vv]||g')"
         docker pull "$(echo ${image} | sed "s|^'||g" | sed "s|'$||g")"
