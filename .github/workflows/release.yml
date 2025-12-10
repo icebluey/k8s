@@ -40,7 +40,21 @@ jobs:
           sudo /bin/rm -fr /tmp/.artifacts
           sudo /bin/rm -fr /tmp/*
           sudo mkdir /tmp/.artifacts
-          sudo bash dl-k8s.sh "1.34.2"
+          sudo bash dl-k8s.sh "1.34.3"
+          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
+          sudo chmod 0644 /tmp/.artifacts/*.tar*
+      - name: Upload files
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env._release_ver }}
+          files: /tmp/.artifacts/*.tar*
+
+      - name: Package K8s 1.33
+        run: |
+          sudo /bin/rm -fr /tmp/.artifacts
+          sudo /bin/rm -fr /tmp/*
+          sudo mkdir /tmp/.artifacts
+          sudo bash dl-k8s.sh "1.33.7"
           sudo mv -f /tmp/*.tar* /tmp/.artifacts/
           sudo chmod 0644 /tmp/.artifacts/*.tar*
       - name: Upload files
@@ -63,19 +77,6 @@ jobs:
           tag_name: ${{ env._release_ver }}
           files: /tmp/.artifacts/*.tar*
 
-      - name: Package K8s 1.33
-        run: |
-          sudo /bin/rm -fr /tmp/.artifacts
-          sudo /bin/rm -fr /tmp/*
-          sudo mkdir /tmp/.artifacts
-          sudo bash dl-k8s.sh "1.33.6"
-          sudo mv -f /tmp/*.tar* /tmp/.artifacts/
-          sudo chmod 0644 /tmp/.artifacts/*.tar*
-      - name: Upload files
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env._release_ver }}
-          files: /tmp/.artifacts/*.tar*
 
       - name: Delete old release tag env
         run: |
