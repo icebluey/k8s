@@ -207,7 +207,7 @@ rm -fr /var/lib/containerd/* /mnt/containerd-data/*
 sleep 1
 systemctl start containerd.service
 sleep 1
-_calico_image_ver=$(wget -qO- 'https://github.com/projectcalico/calico/tags/' | grep -i 'calico/releases/tag/' | grep ""${_calico_ver%.*}"\." | sed 's|"|\n|g' | grep -i 'calico/releases/tag/' | sed -e 's|.*calico/releases/tag/v||g' -e 's| *||g' | sort -V | uniq | tail -n1)
+_calico_image_ver=$(wget -qO- 'https://github.com/projectcalico/calico/tags/' | grep -i 'calico/releases/tag/' | grep ""${_calico_ver%.*}"\." | sed 's|"|\n|g' | grep -i 'calico/releases/tag/' | sed -e 's|.*calico/releases/tag/v||g' -e 's| *||g' | grep -ivE 'alpha|beta|rc|dev' | sort -V | uniq | tail -n1)
 if ! ctr namespaces list | sed "1d" | grep -q -i "k8s\.io"; then ctr namespaces create "k8s.io"; fi
 # pull
 ctr -n k8s.io images pull quay.io/calico/cni:v${_calico_image_ver}
@@ -232,7 +232,7 @@ sleep 1
 rm -fr /var/lib/containerd/* /mnt/containerd-data/*
 
 #_clean_start_docker
-#_calico_image_ver=$(wget -qO- 'https://github.com/projectcalico/calico/tags/' | grep -i 'calico/releases/tag/' | grep ""${_calico_ver%.*}"\." | sed 's|"|\n|g' | grep -i 'calico/releases/tag/' | sed -e 's|.*calico/releases/tag/v||g' -e 's| *||g' | sort -V | uniq | tail -n1)
+#_calico_image_ver=$(wget -qO- 'https://github.com/projectcalico/calico/tags/' | grep -i 'calico/releases/tag/' | grep ""${_calico_ver%.*}"\." | sed 's|"|\n|g' | grep -i 'calico/releases/tag/' | sed -e 's|.*calico/releases/tag/v||g' -e 's| *||g' | grep -ivE 'alpha|beta|rc|dev' | sort -V | uniq | tail -n1)
 # pull
 #docker pull quay.io/calico/cni:v${_calico_image_ver}
 #docker pull quay.io/calico/dikastes:v${_calico_image_ver}
